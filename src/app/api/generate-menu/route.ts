@@ -34,12 +34,22 @@ export async function POST(request: Request) {
 
       以下のJSON形式で出力してください。日本語で回答してください。
       {
-        "breakfast": { "name": "料理名", "calories": 数値, "p": 数値, "f": 数値, "c": 数値, "description": "簡単な説明" },
+        "breakfast": { 
+          "name": "料理名", 
+          "calories": 数値, 
+          "p": 数値, 
+          "f": 数値, 
+          "c": 数値, 
+          "description": "簡単な説明",
+          "ingredients": [ { "name": "材料名", "amount": "分量" } ],
+          "steps": ["手順1", "手順2"...]
+        },
         "lunch": { ... },
         "dinner": { ... },
         "total": { "calories": 数値, "p": 数値, "f": 数値, "c": 数値 }
       }
       合計値ができるだけ目標に近づくように調整してください。
+      調理手順は具体的かつ簡潔に記述してください。
     `;
 
     const result = await model.generateContent(prompt);
