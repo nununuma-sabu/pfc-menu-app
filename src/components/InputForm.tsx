@@ -10,16 +10,16 @@ interface InputFormProps {
 }
 
 export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
-    const [calories, setCalories] = useState<number | "">(2000);
+    const [calories, setCalories] = useState<string>("2000");
     // Default PFC Ratio: 15:25:60 (Standard Japanese balance)
-    const [pRatio, setPRatio] = useState<number | "">(15);
-    const [fRatio, setFRatio] = useState<number | "">(25);
-    const [cRatio, setCRatio] = useState<number | "">(60);
+    const [pRatio, setPRatio] = useState<string>("15");
+    const [fRatio, setFRatio] = useState<string>("25");
+    const [cRatio, setCRatio] = useState<string>("60");
     const [mainIngredient, setMainIngredient] = useState<string>("");
 
     // Recomp specific state
-    const [weight, setWeight] = useState<number | "">("");
-    const [multiplier, setMultiplier] = useState<number>(25);
+    const [weight, setWeight] = useState<string>("");
+    const [multiplier, setMultiplier] = useState<string>("25");
 
     const [error, setError] = useState<string | null>(null);
 
@@ -61,12 +61,9 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
         }
 
         // Validation 2: Sum Check
-        // Allow small rounding errors (99-101) or strict 100?
-        // Let's stick to strict 100 for now, but user might struggle with auto-calc decimals.
-        // We will round the auto-calc to integers so it should sum roughly.
-        // If it doesn't sum to 100 exactly, we might need adjustments.
+        // Strict 100 check required as inputs are integers.
         const totalRatio = pVal + fVal + cVal;
-        if (totalRatio < 99 || totalRatio > 101) {
+        if (totalRatio !== 100) {
             setError(`PFCバランスの合計が表示上 100% になっていません（現在: ${totalRatio}%）。微調整してください。`);
             return;
         }
@@ -81,7 +78,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
     };
 
     const totalRatio = (Number(pRatio) || 0) + (Number(fRatio) || 0) + (Number(cRatio) || 0);
-    const isInvalidTotal = totalRatio < 99 || totalRatio > 101;
+    const isInvalidTotal = totalRatio !== 100;
 
     const PRESETS = [
         { name: "標準バランス", p: 15, f: 25, c: 60, color: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border-blue-200 dark:border-blue-800" },
@@ -91,9 +88,9 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
     ];
 
     const applyPreset = (preset: { p: number; f: number; c: number }) => {
-        setPRatio(preset.p);
-        setFRatio(preset.f);
-        setCRatio(preset.c);
+        setPRatio(preset.p.toString());
+        setFRatio(preset.f.toString());
+        setCRatio(preset.c.toString());
     };
 
     const applyRecomp = () => {
@@ -104,7 +101,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
         }
 
         // 1. Total Calories = Weight * Multiplier
-        const totalCal = Math.round(w * multiplier);
+        const totalCal = Math.round(w * (Number(multiplier) || 0));
 
         // 2. Protein = Weight * 2g
         const pGrams = w * 2;
@@ -128,10 +125,10 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
             return;
         }
 
-        setCalories(totalCal);
-        setPRatio(pPercent);
-        setFRatio(fPercent);
-        setCRatio(cPercent);
+        setCalories(totalCal.toString());
+        setPRatio(pPercent.toString());
+        setFRatio(fPercent.toString());
+        setCRatio(cPercent.toString());
         setError(null);
     };
 
@@ -147,6 +144,27 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
         if (["e", "E", "+", "-"].includes(e.key)) {
             e.preventDefault();
         }
+    };
+
+    const handleSanitizedChange = (
+        e: React.ChangeEvent<HTMLInputElement>,
+        setter: (value: string) => void
+    ) => {
+        let val = e.target.value;
+        // Strip leading zeros if followed by a digit.
+        // "05" -> "5"
+        // "00" -> "0"
+        // "0.5" -> "0.5" (0 is followed by ., not digit)
+        if (val.length > 1) {
+            val = val.replace(/^0+(?=\d)/, "");
+        }
+
+        // Direct DOM manipulation to ensure leading zero is gone even if state doesn't change enough to trigger re-render
+        if (val !== e.target.value) {
+            e.target.value = val;
+        }
+
+        setter(val);
     };
 
     return (
@@ -179,7 +197,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                                 type="number"
                                 value={weight}
                                 onKeyDown={handleFloatKeyDown}
-                                onChange={(e) => setWeight(e.target.value === "" ? "" : Number(e.target.value))}
+                                onChange={(e) => handleSanitizedChange(e, setWeight)}
                                 className="w-full p-2 text-sm border border-zinc-300 dark:border-zinc-600 rounded-md"
                                 placeholder="例: 65"
                             />
@@ -190,7 +208,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                                 type="number"
                                 value={multiplier}
                                 onKeyDown={handleIntegerKeyDown}
-                                onChange={(e) => setMultiplier(Number(e.target.value))}
+                                onChange={(e) => handleSanitizedChange(e, setMultiplier)}
                                 className="w-full p-2 text-sm border border-zinc-300 dark:border-zinc-600 rounded-md"
                             />
                         </div>
@@ -219,7 +237,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                         min="0"
                         value={calories}
                         onKeyDown={handleIntegerKeyDown}
-                        onChange={(e) => setCalories(e.target.value === "" ? "" : Number(e.target.value))}
+                        onChange={(e) => handleSanitizedChange(e, setCalories)}
                         className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-blue-500"
                         required
                     />
@@ -254,7 +272,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                             max="100"
                             value={pRatio}
                             onKeyDown={handleIntegerKeyDown}
-                            onChange={(e) => setPRatio(e.target.value === "" ? "" : Number(e.target.value))}
+                            onChange={(e) => handleSanitizedChange(e, setPRatio)}
                             className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-blue-500 text-center"
                             required
                         />
@@ -272,7 +290,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                             max="100"
                             value={fRatio}
                             onKeyDown={handleIntegerKeyDown}
-                            onChange={(e) => setFRatio(e.target.value === "" ? "" : Number(e.target.value))}
+                            onChange={(e) => handleSanitizedChange(e, setFRatio)}
                             className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-blue-500 text-center"
                             required
                         />
@@ -290,7 +308,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                             max="100"
                             value={cRatio}
                             onKeyDown={handleIntegerKeyDown}
-                            onChange={(e) => setCRatio(e.target.value === "" ? "" : Number(e.target.value))}
+                            onChange={(e) => handleSanitizedChange(e, setCRatio)}
                             className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-blue-500 text-center"
                             required
                         />
