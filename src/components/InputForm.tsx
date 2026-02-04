@@ -135,6 +135,20 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
         setError(null);
     };
 
+    const handleIntegerKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        // Stop e, E, +, -, .
+        if (["e", "E", "+", "-", "."].includes(e.key)) {
+            e.preventDefault();
+        }
+    };
+
+    const handleFloatKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        // Stop e, E, +, - (allow dot)
+        if (["e", "E", "+", "-"].includes(e.key)) {
+            e.preventDefault();
+        }
+    };
+
     return (
         <form onSubmit={handleSubmit} className="w-full max-w-md space-y-6 p-6 bg-white dark:bg-zinc-800 rounded-xl shadow-lg border border-zinc-100 dark:border-zinc-700">
             <div>
@@ -164,6 +178,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                             <input
                                 type="number"
                                 value={weight}
+                                onKeyDown={handleFloatKeyDown}
                                 onChange={(e) => setWeight(e.target.value === "" ? "" : Number(e.target.value))}
                                 className="w-full p-2 text-sm border border-zinc-300 dark:border-zinc-600 rounded-md"
                                 placeholder="例: 65"
@@ -174,6 +189,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                             <input
                                 type="number"
                                 value={multiplier}
+                                onKeyDown={handleIntegerKeyDown}
                                 onChange={(e) => setMultiplier(Number(e.target.value))}
                                 className="w-full p-2 text-sm border border-zinc-300 dark:border-zinc-600 rounded-md"
                             />
@@ -202,6 +218,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                         type="number"
                         min="0"
                         value={calories}
+                        onKeyDown={handleIntegerKeyDown}
                         onChange={(e) => setCalories(e.target.value === "" ? "" : Number(e.target.value))}
                         className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-blue-500"
                         required
@@ -236,6 +253,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                             min="0"
                             max="100"
                             value={pRatio}
+                            onKeyDown={handleIntegerKeyDown}
                             onChange={(e) => setPRatio(e.target.value === "" ? "" : Number(e.target.value))}
                             className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-blue-500 text-center"
                             required
@@ -253,6 +271,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                             min="0"
                             max="100"
                             value={fRatio}
+                            onKeyDown={handleIntegerKeyDown}
                             onChange={(e) => setFRatio(e.target.value === "" ? "" : Number(e.target.value))}
                             className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-blue-500 text-center"
                             required
@@ -270,6 +289,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                             min="0"
                             max="100"
                             value={cRatio}
+                            onKeyDown={handleIntegerKeyDown}
                             onChange={(e) => setCRatio(e.target.value === "" ? "" : Number(e.target.value))}
                             className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-blue-500 text-center"
                             required
