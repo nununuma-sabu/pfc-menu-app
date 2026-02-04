@@ -1,36 +1,33 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI PFC Menu Generator
 
-## Getting Started
+「PFCバランスを合わせるのが面倒くさい...」
+「毎日何を食べるか考えるのが大変...」
 
-First, run the development server:
+そんな個人的な悩みから生まれた、**AIによる献立提案アプリ**です。
+目標カロリーとPFCバランスを入力するだけで、Gemini AIがよしなに1日の献立を考えてくれます。
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## なぜ作ったか
+筋トレやダイエットをしていると、どうしても「PFCバランス」の計算が必要になります。
+しかし、毎日「タンパク質があと20g足りない...」「脂質を抑えなきゃ...」と考えながら献立を組むのは非常にストレスでした。
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+「冷蔵庫にある食材や、食べたいものを指定して、あとはAIに丸投げしたい」
+そんな思いで、自分用にサクッと作りました。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 主な機能
+*   **AIによる献立提案**: 指定したカロリー・PFCバランスに合わせた朝・昼・夕のメニューを提案します。
+*   **PFCプリセット**: 「ローファット」「ケトジェニック」「増量期」など、ボタン一つで切り替え可能です。
+*   **リコンプ計算機**: 体重を入力するだけで、ボディメイク（リコンプ）に最適な数値を自動計算します。
+*   **メイン食材指定**: 「今日は鶏胸肉を使いたい」「魚が食べたい」といった要望に対応します。
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 使い方
+1.  目標カロリーとPFC（またはプリセット）を設定します。
+2.  必要であれば「メイン食材」を入力します。
+3.  「献立を提案する」ボタンを押すだけ！
 
-## Learn More
+## 技術スタック
+*   Next.js (App Router)
+*   Tailwind CSS
+*   Google Gemini API
+*   Vercel
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+個人用ツールとして作ったものですが、同じような悩みを持つ方の役に立てば嬉しいです。
