@@ -75,11 +75,38 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
     const totalRatio = (Number(pRatio) || 0) + (Number(fRatio) || 0) + (Number(cRatio) || 0);
     const isInvalidTotal = totalRatio !== 100;
 
+    const PRESETS = [
+        { name: "標準バランス", p: 15, f: 25, c: 60, color: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border-blue-200 dark:border-blue-800" },
+        { name: "ローファット", p: 30, f: 10, c: 60, color: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 border-green-200 dark:border-green-800" },
+        { name: "ケトジェニック", p: 20, f: 75, c: 5, color: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 border-purple-200 dark:border-purple-800" },
+        { name: "筋肥大 (高タンパク)", p: 40, f: 20, c: 40, color: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300 border-orange-200 dark:border-orange-800" },
+    ];
+
+    const applyPreset = (preset: { p: number; f: number; c: number }) => {
+        setPRatio(preset.p);
+        setFRatio(preset.f);
+        setCRatio(preset.c);
+    };
+
     return (
         <form onSubmit={handleSubmit} className="w-full max-w-md space-y-6 p-6 bg-white dark:bg-zinc-800 rounded-xl shadow-lg border border-zinc-100 dark:border-zinc-700">
             <div>
                 <h2 className="text-xl font-bold text-zinc-800 dark:text-white mb-1">PFCバランス設定</h2>
                 <p className="text-sm text-zinc-500 dark:text-zinc-400">目標カロリーとPFC比率(%)を入力してください</p>
+
+                {/* Presets */}
+                <div className="mt-4 grid grid-cols-2 gap-2">
+                    {PRESETS.map((preset) => (
+                        <button
+                            key={preset.name}
+                            type="button"
+                            onClick={() => applyPreset(preset)}
+                            className={`p-2 text-xs font-bold rounded-lg border transition-all hover:scale-105 ${preset.color}`}
+                        >
+                            {preset.name}
+                        </button>
+                    ))}
+                </div>
             </div>
 
             <div className="space-y-4">
