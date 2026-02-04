@@ -17,6 +17,10 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
     const [cRatio, setCRatio] = useState<number | "">(60);
     const [mainIngredient, setMainIngredient] = useState<string>("");
 
+    // Recomp specific state
+    const [weight, setWeight] = useState<number | "">("");
+    const [multiplier, setMultiplier] = useState<number>(25);
+
     const [error, setError] = useState<string | null>(null);
 
     // Calculated grams (for display)
@@ -57,9 +61,13 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
         }
 
         // Validation 2: Sum Check
+        // Allow small rounding errors (99-101) or strict 100?
+        // Let's stick to strict 100 for now, but user might struggle with auto-calc decimals.
+        // We will round the auto-calc to integers so it should sum roughly.
+        // If it doesn't sum to 100 exactly, we might need adjustments.
         const totalRatio = pVal + fVal + cVal;
-        if (totalRatio !== 100) {
-            setError(`PFCバランスの合計が100%になっていません（現在: ${totalRatio}%）。`);
+        if (totalRatio < 99 || totalRatio > 101) {
+            setError(`PFCバランスの合計が表示上 100% になっていません（現在: ${totalRatio}%）。微調整してください。`);
             return;
         }
 
@@ -73,7 +81,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
     };
 
     const totalRatio = (Number(pRatio) || 0) + (Number(fRatio) || 0) + (Number(cRatio) || 0);
-    const isInvalidTotal = totalRatio !== 100;
+    const isInvalidTotal = totalRatio < 99 || totalRatio > 101;
 
     const PRESETS = [
         { name: "標準バランス", p: 15, f: 25, c: 60, color: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border-blue-200 dark:border-blue-800" },
@@ -86,6 +94,45 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
         setPRatio(preset.p);
         setFRatio(preset.f);
         setCRatio(preset.c);
+    };
+
+    const applyRecomp = () => {
+        const w = Number(weight);
+        if (!w || w <= 0) {
+            setError("リコンプ計算をするには、体重(kg)を入力してください。");
+            return;
+        }
+
+        // 1. Total Calories = Weight * Multiplier
+        const totalCal = Math.round(w * multiplier);
+
+        // 2. Protein = Weight * 2g
+        const pGrams = w * 2;
+        const pCals = pGrams * 4;
+
+        // 3. Fat = 25% of Total Calories
+        const fCals = totalCal * 0.25;
+        // const fGrams = fCals / 9;
+
+        // 4. Carbs = Remainder
+        const cCals = totalCal - pCals - fCals;
+
+        // Convert to Percentages
+        const pPercent = Math.round((pCals / totalCal) * 100);
+        const fPercent = Math.round((fCals / totalCal) * 100); // Should be 25
+        // Ensure sum is 100
+        const cPercent = 100 - pPercent - fPercent;
+
+        if (cPercent < 0) {
+            setError("この設定では炭水化物がマイナスになります。カロリー係数を上げるか、体重設定を見直してください。");
+            return;
+        }
+
+        setCalories(totalCal);
+        setPRatio(pPercent);
+        setFRatio(fPercent);
+        setCRatio(cPercent);
+        setError(null);
     };
 
     return (
@@ -106,6 +153,42 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                             {preset.name}
                         </button>
                     ))}
+                </div>
+
+                {/* Recomp Calculation */}
+                <div className="mt-4 p-3 bg-zinc-50 dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-700">
+                    <h3 className="text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-2">🔥 リコンプ設定 (自動計算)</h3>
+                    <div className="flex gap-2 items-end">
+                        <div className="flex-1">
+                            <label className="block text-xs text-zinc-500 mb-1">体重 (kg)</label>
+                            <input
+                                type="number"
+                                value={weight}
+                                onChange={(e) => setWeight(e.target.value === "" ? "" : Number(e.target.value))}
+                                className="w-full p-2 text-sm border border-zinc-300 dark:border-zinc-600 rounded-md"
+                                placeholder="例: 65"
+                            />
+                        </div>
+                        <div className="w-20">
+                            <label className="block text-xs text-zinc-500 mb-1">係数</label>
+                            <input
+                                type="number"
+                                value={multiplier}
+                                onChange={(e) => setMultiplier(Number(e.target.value))}
+                                className="w-full p-2 text-sm border border-zinc-300 dark:border-zinc-600 rounded-md"
+                            />
+                        </div>
+                        <button
+                            type="button"
+                            onClick={applyRecomp}
+                            className="bg-indigo-600 hover:bg-indigo-700 text-white p-2 rounded-md font-bold text-sm h-[38px] w-20"
+                        >
+                            適用
+                        </button>
+                    </div>
+                    <p className="text-[10px] text-zinc-400 mt-2">
+                        ※ P=体重×2g, F=全体25%, C=残り (係数目安: 24~26)
+                    </p>
                 </div>
             </div>
 
