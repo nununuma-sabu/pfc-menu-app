@@ -5,7 +5,7 @@ import { Loader2, AlertCircle } from "lucide-react";
 import clsx from "clsx";
 
 interface InputFormProps {
-    onSubmit: (data: { calories: number; p: number; f: number; c: number }) => Promise<void>;
+    onSubmit: (data: { calories: number; p: number; f: number; c: number; mainIngredient?: string }) => Promise<void>;
     isLoading: boolean;
 }
 
@@ -15,6 +15,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
     const [pRatio, setPRatio] = useState<number | "">(15);
     const [fRatio, setFRatio] = useState<number | "">(25);
     const [cRatio, setCRatio] = useState<number | "">(60);
+    const [mainIngredient, setMainIngredient] = useState<string>("");
 
     const [error, setError] = useState<string | null>(null);
 
@@ -66,7 +67,8 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
             calories: calVal,
             p: grams.p,
             f: grams.f,
-            c: grams.c
+            c: grams.c,
+            mainIngredient: mainIngredient.trim()
         });
     };
 
@@ -94,6 +96,23 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                         className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-blue-500"
                         required
                     />
+                </div>
+
+                {/* Main Ingredient */}
+                <div>
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                        メイン食材 (任意)
+                    </label>
+                    <input
+                        type="text"
+                        value={mainIngredient}
+                        onChange={(e) => setMainIngredient(e.target.value)}
+                        placeholder="例: 鶏胸肉, 鮭"
+                        className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-blue-500"
+                    />
+                    <p className="text-xs text-zinc-500 mt-1">
+                        使いたい食材があれば入力してください。
+                    </p>
                 </div>
 
                 {/* PFC Ratios */}

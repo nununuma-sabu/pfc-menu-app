@@ -11,15 +11,21 @@ export async function POST(request: Request) {
       );
     }
 
-    const { calories, p, f, c } = await request.json();
+    const { calories, p, f, c, mainIngredient } = await request.json();
 
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
 
-    const prompt = `
+    let prompt = `
       あなたはプロの管理栄養士です。
       以下の栄養目標に合わせた1日の献立（朝食、昼食、夕食）を提案してください。
+    `;
 
+    if (mainIngredient) {
+      prompt += `\n      【重要】メイン食材として「${mainIngredient}」を使用してください。\n`;
+    }
+
+    prompt += `
       目標:
       - 総摂取カロリー: 約 ${calories} kcal
       - タンパク質(P): 約 ${p}g
