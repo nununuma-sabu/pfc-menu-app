@@ -1,7 +1,8 @@
-import { Utensils, Moon, Sun, Sunrise } from "lucide-react";
+import { Utensils, Moon, Sun, Sunrise, Coffee } from "lucide-react";
 
 interface Meal {
     name: string;
+    timeLabel: string;
     calories: number;
     p: number;
     f: number;
@@ -12,9 +13,7 @@ interface Meal {
 }
 
 interface MenuData {
-    breakfast: Meal;
-    lunch: Meal;
-    dinner: Meal;
+    meals: Meal[];
     total: {
         calories: number;
         p: number;
@@ -27,12 +26,22 @@ interface MenuDisplayProps {
     menu: MenuData | null;
 }
 
-function MealCard({ title, meal, icon: Icon, colorClass }: { title: string; meal: Meal; icon: any; colorClass: string }) {
+function MealCard({ meal }: { meal: Meal }) {
+    const getMealStyle = (label: string) => {
+        if (label.includes("朝")) return { icon: Sunrise, color: "bg-orange-500" };
+        if (label.includes("昼")) return { icon: Sun, color: "bg-yellow-500" };
+        if (label.includes("夕") || label.includes("晩")) return { icon: Moon, color: "bg-indigo-500" };
+        if (label.includes("間") || label.includes("補")) return { icon: Coffee, color: "bg-pink-500" };
+        return { icon: Utensils, color: "bg-teal-500" };
+    };
+
+    const { icon: Icon, color } = getMealStyle(meal.timeLabel);
+
     return (
         <div className="bg-white dark:bg-zinc-800 rounded-xl shadow-md overflow-hidden border border-zinc-100 dark:border-zinc-700 hover:shadow-lg transition-shadow flex flex-col h-full">
-            <div className={`p-4 ${colorClass} text-white flex items-center gap-2`}>
+            <div className={`p-4 ${color} text-white flex items-center gap-2`}>
                 <Icon className="w-5 h-5" />
-                <h3 className="font-bold text-lg">{title}</h3>
+                <h3 className="font-bold text-lg">{meal.timeLabel}</h3>
             </div>
             <div className="p-4 space-y-4 flex-1 flex flex-col">
                 <div>
@@ -92,29 +101,17 @@ function MealCard({ title, meal, icon: Icon, colorClass }: { title: string; meal
 }
 
 export default function MenuDisplay({ menu }: MenuDisplayProps) {
-    if (!menu) return null;
+    if (!menu || !menu.meals) return null;
 
     return (
-        <div className="w-full max-w-4xl space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <MealCard
-                    title="朝食"
-                    meal={menu.breakfast}
-                    icon={Sunrise}
-                    colorClass="bg-orange-500"
-                />
-                <MealCard
-                    title="昼食"
-                    meal={menu.lunch}
-                    icon={Sun}
-                    colorClass="bg-yellow-500"
-                />
-                <MealCard
-                    title="夕食"
-                    meal={menu.dinner}
-                    icon={Moon}
-                    colorClass="bg-indigo-500"
-                />
+        <div className="w-full max-w-5xl space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {menu.meals && menu.meals.map((meal, index) => (
+                    <MealCard
+                        key={index}
+                        meal={meal}
+                    />
+                ))}
             </div>
 
             <div className="bg-zinc-100 dark:bg-zinc-800 p-4 rounded-xl flex flex-wrap justify-between items-center gap-4">

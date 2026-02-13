@@ -11,14 +11,14 @@ export async function POST(request: Request) {
       );
     }
 
-    const { calories, p, f, c, mainIngredient } = await request.json();
+    const { calories, p, f, c, mainIngredient, mealCount = 3 } = await request.json();
 
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
 
     let prompt = `
       あなたはプロの管理栄養士です。
-      以下の栄養目標に合わせた1日の献立（朝食、昼食、夕食）を提案してください。
+      以下の栄養目標に合わせた1日の献立（全${mealCount}食）を提案してください。
     `;
 
     if (mainIngredient) {
@@ -34,20 +34,23 @@ export async function POST(request: Request) {
 
       以下のJSON形式で出力してください。日本語で回答してください。
       {
-        "breakfast": { 
-          "name": "料理名", 
-          "calories": 数値, 
-          "p": 数値, 
-          "f": 数値, 
-          "c": 数値, 
-          "description": "簡単な説明",
-          "ingredients": [ { "name": "材料名", "amount": "分量" } ],
-          "steps": ["手順1", "手順2"...]
-        },
-        "lunch": { ... },
-        "dinner": { ... },
+        "meals": [
+          {
+            "name": "料理名",
+            "timeLabel": "タイミング（例：朝食、昼食、夕食、間食）",
+            "calories": 数値,
+            "p": 数値,
+            "f": 数値,
+            "c": 数値,
+            "description": "簡単な説明",
+            "ingredients": [ { "name": "材料名", "amount": "分量" } ],
+            "steps": ["手順1", "手順2"...]
+          }
+        ],
         "total": { "calories": 数値, "p": 数値, "f": 数値, "c": 数値 }
       }
+      meals配列には必ず${mealCount}つの要素を含めてください。
+      食事が3回の場合は「朝食・昼食・夕食」、4回以上などは「朝食・昼食・夕食・間食」など適切な配分にしてください。
       合計値ができるだけ目標に近づくように調整してください。
       調理手順は具体的かつ簡潔に記述してください。
     `;

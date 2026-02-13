@@ -5,7 +5,7 @@ import { Loader2, AlertCircle } from "lucide-react";
 import clsx from "clsx";
 
 interface InputFormProps {
-    onSubmit: (data: { calories: number; p: number; f: number; c: number; mainIngredient?: string }) => Promise<void>;
+    onSubmit: (data: { calories: number; p: number; f: number; c: number; mainIngredient?: string; mealCount: number }) => Promise<void>;
     isLoading: boolean;
 }
 
@@ -16,6 +16,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
     const [fRatio, setFRatio] = useState<string>("25");
     const [cRatio, setCRatio] = useState<string>("60");
     const [mainIngredient, setMainIngredient] = useState<string>("");
+    const [mealCount, setMealCount] = useState<number>(3);
 
     // Recomp specific state
     const [weight, setWeight] = useState<string>("");
@@ -73,7 +74,8 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
             p: grams.p,
             f: grams.f,
             c: grams.c,
-            mainIngredient: mainIngredient.trim()
+            mainIngredient: mainIngredient.trim(),
+            mealCount
         });
     };
 
@@ -258,6 +260,30 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                     <p className="text-xs text-zinc-500 mt-1">
                         使いたい食材があれば入力してください。
                     </p>
+                </div>
+
+                {/* Meal Count */}
+                <div>
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                        食事回数
+                    </label>
+                    <div className="flex gap-2">
+                        {[3, 4, 5, 6].map((count) => (
+                            <button
+                                key={count}
+                                type="button"
+                                onClick={() => setMealCount(count)}
+                                className={clsx(
+                                    "flex-1 py-2 rounded-md font-bold text-sm border transition-colors",
+                                    mealCount === count
+                                        ? "bg-blue-600 text-white border-blue-600"
+                                        : "bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-300 dark:border-zinc-600 hover:bg-zinc-50 dark:hover:bg-zinc-700"
+                                )}
+                            >
+                                {count}食
+                            </button>
+                        ))}
+                    </div>
                 </div>
 
                 {/* PFC Ratios */}
