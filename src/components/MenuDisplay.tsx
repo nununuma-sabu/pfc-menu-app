@@ -14,6 +14,7 @@ interface Meal {
 
 interface MenuData {
     meals: Meal[];
+    shoppingList?: { name: string; amount: string }[];
     total: {
         calories: number;
         p: number;
@@ -126,6 +127,28 @@ export default function MenuDisplay({ menu }: MenuDisplayProps) {
                     <div><span className="text-zinc-500 mr-1">C:</span><span className="font-bold">{menu.total.c}g</span></div>
                 </div>
             </div>
+
+            {/* Shopping List */}
+            {menu.shoppingList && menu.shoppingList.length > 0 && (
+                <div className="bg-white dark:bg-zinc-800 p-6 rounded-xl shadow-md border border-zinc-100 dark:border-zinc-700">
+                    <h3 className="font-bold text-xl text-zinc-800 dark:text-white mb-4 flex items-center gap-2">
+                        <span className="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 p-2 rounded-lg">
+                            <Utensils className="w-5 h-5" />
+                        </span>
+                        買い物リスト
+                    </h3>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        {menu.shoppingList.map((item, index) => (
+                            <div key={index} className="flex items-center gap-2 p-2 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-700/50 transition-colors">
+                                <input type="checkbox" className="w-4 h-4 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500" />
+                                <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                                    {item.name} <span className="text-zinc-400 text-xs">({item.amount})</span>
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
