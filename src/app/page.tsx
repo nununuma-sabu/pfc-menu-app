@@ -3,6 +3,7 @@
 import { useState } from "react";
 import InputForm from "@/components/InputForm";
 import MenuDisplay from "@/components/MenuDisplay";
+import NutritionTip from "@/components/NutritionTip";
 import { Sparkles } from "lucide-react";
 
 export default function Home() {
@@ -53,6 +54,8 @@ export default function Home() {
         </div>
 
         <InputForm onSubmit={handleGenerateMenu} isLoading={loading} />
+
+        {loading && <NutritionTip />}
 
         {error && (
           <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 px-4 py-3 rounded-lg border border-red-200 dark:border-red-800">

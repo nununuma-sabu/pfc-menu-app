@@ -17,7 +17,6 @@ export async function POST(request: Request) {
     const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
 
     let prompt = `
-      あなたはプロの管理栄養士です。
       以下の栄養目標に合わせた1日の献立（全${mealCount}食）を提案してください。
     `;
 
