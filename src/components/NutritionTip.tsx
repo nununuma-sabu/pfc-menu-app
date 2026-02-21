@@ -1,17 +1,32 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { nutritionTips, NutritionTipData } from "@/data/nutritionTips";
 import { Lightbulb } from "lucide-react";
 
 export default function NutritionTip() {
     const [tip, setTip] = useState<NutritionTipData | null>(null);
+    const [fade, setFade] = useState(true);
+
+    const pickRandom = useCallback(() => {
+        const randomIndex = Math.floor(Math.random() * nutritionTips.length);
+        return nutritionTips[randomIndex];
+    }, []);
 
     useEffect(() => {
-        // Randomly select a tip on mount
-        const randomIndex = Math.floor(Math.random() * nutritionTips.length);
-        setTip(nutritionTips[randomIndex]);
-    }, []);
+        setTip(pickRandom());
+
+        // Rotate tips every 5 seconds with fade transition
+        const interval = setInterval(() => {
+            setFade(false);
+            setTimeout(() => {
+                setTip(pickRandom());
+                setFade(true);
+            }, 300);
+        }, 5000);
+
+        return () => clearInterval(interval);
+    }, [pickRandom]);
 
     if (!tip) return null;
 
@@ -23,7 +38,7 @@ export default function NutritionTip() {
                     <Lightbulb className="w-24 h-24" />
                 </div>
 
-                <div className="relative z-10">
+                <div className={`relative z-10 transition-opacity duration-300 ${fade ? "opacity-100" : "opacity-0"}`}>
                     <div className="flex items-center gap-2 mb-3 text-amber-600 dark:text-amber-400 font-bold">
                         <Lightbulb className="w-5 h-5 animate-pulse" />
                         <span>豆知識</span>
