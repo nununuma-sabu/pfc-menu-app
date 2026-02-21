@@ -11,50 +11,30 @@ export async function POST(request: Request) {
       );
     }
 
-    const { calories, p, f, c, mainIngredient, mealCount = 3 } = await request.json();
+    const { calories, p, f, c, mainIngredient, mealCount = 3, days = 3 } = await request.json();
 
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
 
-    let prompt = `
-      以下の栄養目標に合わせた1日の献立（全${mealCount}食）を提案してください。
-    `;
+    let prompt = `${days}日分の献立(各日${mealCount}食)を提案。`;
 
     if (mainIngredient) {
-      prompt += `\n      【重要】メイン食材として「${mainIngredient}」を使用してください。\n`;
+      prompt += `メイン食材:「${mainIngredient}」を活用。`;
     }
 
     prompt += `
-      目標:
-      - 総摂取カロリー: 約 ${calories} kcal
-      - タンパク質(P): 約 ${p}g
-      - 脂質(F): 約 ${f}g
-      - 炭水化物(C): 約 ${c}g
+目標(1日あたり): ${calories}kcal, P${p}g, F${f}g, C${c}g
 
-      以下のJSON形式で出力してください。日本語で回答してください。
-      {
-        "meals": [
-          {
-            "name": "料理名",
-            "timeLabel": "タイミング（例：朝食、昼食、夕食、間食）",
-            "calories": 数値,
-            "p": 数値,
-            "f": 数値,
-            "c": 数値,
-            "description": "簡単な説明",
-            "ingredients": [ { "name": "材料名", "amount": "分量" } ],
-            "steps": ["手順1", "手順2"...]
-          }
-        ],
-        "shoppingList": [ { "name": "材料名", "amount": "合計分量" } ],
-        "total": { "calories": 数値, "p": 数値, "f": 数値, "c": 数値 }
-      }
-      meals配列には必ず${mealCount}つの要素を含めてください。
-      shoppingListには、全ての食事で使用する材料を合算してリストアップしてください。
-      食事が3回の場合は「朝食・昼食・夕食」、4回以上などは「朝食・昼食・夕食・間食」など適切な配分にしてください。
-      合計値ができるだけ目標に近づくように調整してください。
-      調理手順は具体的かつ簡潔に記述してください。
-    `;
+条件:
+- 日ごとにジャンル(和/洋/中/エスニック等)と主タンパク源(鶏/魚/豚/牛/豆腐等)を変えて飽き防止
+- スーパーで手に入りやすい食材のみ使用
+- 共通食材は複数日で使い回し、食材ロスを最小化
+- 買い物リストは${days}日分を統合し重複合算
+
+以下のJSON形式で出力(キーは短縮名を使用):
+{"days":[{"dl":"1日目","meals":[{"n":"料理名","t":"朝食","cal":数値,"p":数値,"f":数値,"c":数値,"d":"一行説明","ing":[{"n":"材料名","a":"分量"}],"st":["手順(簡潔に)"]}],"total":{"cal":数値,"p":数値,"f":数値,"c":数値}}],"sl":[{"n":"材料名","a":"合計分量","cat":"肉魚/野菜/乾物調味料/乳製品卵/主食"}],"gt":{"cal":数値,"p":数値,"f":数値,"c":数値}}
+
+各日meals配列は${mealCount}要素。${mealCount === 3 ? "朝食・昼食・夕食" : "朝食・昼食・夕食・間食等"}で配分。手順は1文で簡潔に。各日totalと全体gtは目標に近づける。`;
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
@@ -68,8 +48,12 @@ export async function POST(request: Request) {
       // Extract JSON object if there is extra text
       const jsonMatch = cleanText.match(/\{[\s\S]*\}/);
       const jsonStr = jsonMatch ? jsonMatch[0] : cleanText;
+      const parsed = JSON.parse(jsonStr);
 
-      return NextResponse.json(JSON.parse(jsonStr));
+      // Expand shortened keys to full keys for frontend consumption
+      const expanded = expandKeys(parsed);
+
+      return NextResponse.json(expanded);
     } catch (parseError) {
       console.error("JSON Parse Error:", parseError);
       console.error("Failed text:", cleanText);
@@ -85,4 +69,72 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
+}
+
+/**
+ * Expand shortened JSON keys from Gemini response to full keys for frontend.
+ * Handles both multi-day (days array) and legacy single-day (meals array) formats.
+ */
+function expandKeys(data: any): any {
+  // Multi-day format
+  if (data.days) {
+    return {
+      days: data.days.map((day: any) => ({
+        dayLabel: day.dl || day.dayLabel || "",
+        meals: expandMeals(day.meals || []),
+        total: expandTotal(day.total || {}),
+      })),
+      shoppingList: expandShoppingList(data.sl || data.shoppingList || []),
+      grandTotal: expandTotal(data.gt || data.grandTotal || {}),
+    };
+  }
+
+  // Legacy single-day format (backward compatibility)
+  if (data.meals) {
+    return {
+      days: [{
+        dayLabel: "1日目",
+        meals: expandMeals(data.meals),
+        total: expandTotal(data.total || {}),
+      }],
+      shoppingList: expandShoppingList(data.shoppingList || []),
+      grandTotal: expandTotal(data.total || {}),
+    };
+  }
+
+  return data;
+}
+
+function expandMeals(meals: any[]): any[] {
+  return meals.map((m: any) => ({
+    name: m.n || m.name || "",
+    timeLabel: m.t || m.timeLabel || "",
+    calories: m.cal || m.calories || 0,
+    p: m.p || 0,
+    f: m.f || 0,
+    c: m.c || 0,
+    description: m.d || m.description || "",
+    ingredients: (m.ing || m.ingredients || []).map((i: any) => ({
+      name: i.n || i.name || "",
+      amount: i.a || i.amount || "",
+    })),
+    steps: m.st || m.steps || [],
+  }));
+}
+
+function expandTotal(t: any): any {
+  return {
+    calories: t.cal || t.calories || 0,
+    p: t.p || 0,
+    f: t.f || 0,
+    c: t.c || 0,
+  };
+}
+
+function expandShoppingList(list: any[]): any[] {
+  return list.map((item: any) => ({
+    name: item.n || item.name || "",
+    amount: item.a || item.amount || "",
+    category: item.cat || item.category || "その他",
+  }));
 }

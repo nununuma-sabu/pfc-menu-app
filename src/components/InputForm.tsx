@@ -5,7 +5,7 @@ import { Loader2, AlertCircle } from "lucide-react";
 import clsx from "clsx";
 
 interface InputFormProps {
-    onSubmit: (data: { calories: number; p: number; f: number; c: number; mainIngredient?: string; mealCount: number }) => Promise<void>;
+    onSubmit: (data: { calories: number; p: number; f: number; c: number; mainIngredient?: string; mealCount: number; days: number }) => Promise<void>;
     isLoading: boolean;
 }
 
@@ -17,6 +17,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
     const [cRatio, setCRatio] = useState<string>("60");
     const [mainIngredient, setMainIngredient] = useState<string>("");
     const [mealCount, setMealCount] = useState<number>(3);
+    const [days, setDays] = useState<number>(3);
 
     // Recomp specific state
     const [weight, setWeight] = useState<string>("");
@@ -75,7 +76,8 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
             f: grams.f,
             c: grams.c,
             mainIngredient: mainIngredient.trim(),
-            mealCount
+            mealCount,
+            days
         });
     };
 
@@ -262,10 +264,37 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                     </p>
                 </div>
 
+                {/* Days */}
+                <div>
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                        生成日数
+                    </label>
+                    <div className="flex gap-2">
+                        {[1, 2, 3].map((d) => (
+                            <button
+                                key={d}
+                                type="button"
+                                onClick={() => setDays(d)}
+                                className={clsx(
+                                    "flex-1 py-2 rounded-md font-bold text-sm border transition-colors",
+                                    days === d
+                                        ? "bg-emerald-600 text-white border-emerald-600"
+                                        : "bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-300 dark:border-zinc-600 hover:bg-zinc-50 dark:hover:bg-zinc-700"
+                                )}
+                            >
+                                {d}日分
+                            </button>
+                        ))}
+                    </div>
+                    <p className="text-xs text-zinc-500 mt-1">
+                        まとめ買い向け。日ごとに異なるメニューを提案します。
+                    </p>
+                </div>
+
                 {/* Meal Count */}
                 <div>
                     <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
-                        食事回数
+                        食事回数（1日あたり）
                     </label>
                     <div className="flex gap-2">
                         {[3, 4, 5, 6].map((count) => (

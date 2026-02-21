@@ -49,7 +49,7 @@ export default function Home() {
             PFC Balancer
           </h1>
           <p className="text-lg text-zinc-600 dark:text-zinc-400 max-w-lg">
-            あなたの目標に合わせて、最適な献立をAIが提案します。
+            あなたの目標に合わせて、最適な献立をAIがまとめて提案します。
           </p>
         </div>
 
