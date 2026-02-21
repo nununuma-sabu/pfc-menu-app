@@ -4,9 +4,11 @@ import { useState } from "react";
 import InputForm from "@/components/InputForm";
 import MenuDisplay from "@/components/MenuDisplay";
 import NutritionTip from "@/components/NutritionTip";
+import DisclaimerScreen from "@/components/DisclaimerScreen";
 import { Sparkles } from "lucide-react";
 
 export default function Home() {
+  const [showDisclaimer, setShowDisclaimer] = useState(true);
   const [menu, setMenu] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,6 +38,10 @@ export default function Home() {
       setLoading(false);
     }
   };
+
+  if (showDisclaimer) {
+    return <DisclaimerScreen onComplete={() => setShowDisclaimer(false)} />;
+  }
 
   return (
     <main className="min-h-screen bg-slate-50 dark:bg-black py-12 px-4 sm:px-8 font-sans">
