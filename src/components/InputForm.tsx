@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Loader2, AlertCircle } from "lucide-react";
+import { Loader2, AlertCircle, Lock } from "lucide-react";
 import clsx from "clsx";
 
 interface InputFormProps {
-    onSubmit: (data: { calories: number; p: number; f: number; c: number; mainIngredient?: string; mealCount: number; days: number }) => Promise<void>;
+    onSubmit: (data: { calories: number; p: number; f: number; c: number; mainIngredient?: string; mealCount: number; days: number; fixBreakfast: boolean }) => Promise<void>;
     isLoading: boolean;
 }
 
@@ -18,6 +18,10 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
     const [mainIngredient, setMainIngredient] = useState<string>("");
     const [mealCount, setMealCount] = useState<number>(3);
     const [days, setDays] = useState<number>(3);
+    const [fixBreakfast, setFixBreakfast] = useState<boolean>(false);
+
+    // Secret mode: activated by typing "/s" in main ingredient field
+    const [isSecretMode, setIsSecretMode] = useState<boolean>(false);
 
     // Recomp specific state
     const [weight, setWeight] = useState<string>("");
@@ -77,7 +81,8 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
             c: grams.c,
             mainIngredient: mainIngredient.trim(),
             mealCount,
-            days
+            days,
+            fixBreakfast
         });
     };
 
@@ -230,6 +235,37 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                 </div>
             </div>
 
+            {/* Secret Mode: Fixed Breakfast Toggle */}
+            {isSecretMode && (
+                <div className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <Lock className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                            <span className="text-sm font-bold text-amber-700 dark:text-amber-300">朝食固定</span>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setFixBreakfast(!fixBreakfast)}
+                            className={clsx(
+                                "relative w-12 h-6 rounded-full transition-colors",
+                                fixBreakfast ? "bg-amber-500" : "bg-zinc-300 dark:bg-zinc-600"
+                            )}
+                        >
+                            <span className={clsx(
+                                "absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform",
+                                fixBreakfast && "translate-x-6"
+                            )} />
+                        </button>
+                    </div>
+                    {fixBreakfast && (
+                        <div className="mt-2 text-xs text-amber-600 dark:text-amber-400 space-y-1">
+                            <p className="font-medium">🥤 プロテインスムージー (270kcal / P26g / F2g / C46g)</p>
+                            <p className="text-[10px] text-amber-500">プロテイン30g・冷凍バナナ1本・ベリー100g・イヌリン大さじ1</p>
+                        </div>
+                    )}
+                </div>
+            )}
+
             <div className="space-y-4">
                 {/* Calories */}
                 <div>
@@ -255,7 +291,16 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                     <input
                         type="text"
                         value={mainIngredient}
-                        onChange={(e) => setMainIngredient(e.target.value)}
+                        onChange={(e) => {
+                            const val = e.target.value;
+                            if (val.trim() === "/s") {
+                                setIsSecretMode(prev => !prev);
+                                setMainIngredient("");
+                                if (!isSecretMode) setFixBreakfast(true);
+                                return;
+                            }
+                            setMainIngredient(val);
+                        }}
                         placeholder="例: 鶏胸肉, 鮭"
                         className="w-full p-2 border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-blue-500"
                     />
