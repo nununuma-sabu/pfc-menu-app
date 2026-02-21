@@ -61,9 +61,10 @@ export default function NutritionTip() {
                         <span>豆知識</span>
                     </div>
 
-                    <h3 className="text-lg font-bold text-zinc-800 dark:text-zinc-100 mb-2">
+                    <h3 className="text-lg font-bold text-zinc-800 dark:text-zinc-100 mb-1">
                         {tip.title}
                     </h3>
+                    <p className="text-[10px] text-amber-500 dark:text-amber-500/70 mb-2">{tip.category}</p>
 
                     <p className="text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed">
                         {tip.content}
