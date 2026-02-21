@@ -1,34 +1,45 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useRef } from "react";
 import { nutritionTips, NutritionTipData } from "@/data/nutritionTips";
 import { Lightbulb } from "lucide-react";
 
-export default function NutritionTip() {
-    const [tip, setTip] = useState<NutritionTipData | null>(null);
-    const [fade, setFade] = useState(true);
+function getRandomTip(exclude?: NutritionTipData): NutritionTipData {
+    if (nutritionTips.length <= 1) return nutritionTips[0];
+    let next: NutritionTipData;
+    do {
+        next = nutritionTips[Math.floor(Math.random() * nutritionTips.length)];
+    } while (next.title === exclude?.title);
+    return next;
+}
 
-    const pickRandom = useCallback(() => {
-        const randomIndex = Math.floor(Math.random() * nutritionTips.length);
-        return nutritionTips[randomIndex];
-    }, []);
+export default function NutritionTip() {
+    const [tip, setTip] = useState<NutritionTipData>(() => getRandomTip());
+    const [visible, setVisible] = useState(true);
+    const tipRef = useRef(tip);
+    const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     useEffect(() => {
-        setTip(pickRandom());
+        tipRef.current = tip;
+    }, [tip]);
 
-        // Rotate tips every 5 seconds with fade transition
-        const interval = setInterval(() => {
-            setFade(false);
+    useEffect(() => {
+        timerRef.current = setInterval(() => {
+            // Fade out
+            setVisible(false);
+
+            // After fade out, swap tip and fade in
             setTimeout(() => {
-                setTip(pickRandom());
-                setFade(true);
-            }, 300);
+                const next = getRandomTip(tipRef.current);
+                setTip(next);
+                setVisible(true);
+            }, 400);
         }, 5000);
 
-        return () => clearInterval(interval);
-    }, [pickRandom]);
-
-    if (!tip) return null;
+        return () => {
+            if (timerRef.current) clearInterval(timerRef.current);
+        };
+    }, []);
 
     return (
         <div className="w-full max-w-md mx-auto mt-8 animate-in fade-in zoom-in duration-500">
@@ -38,7 +49,13 @@ export default function NutritionTip() {
                     <Lightbulb className="w-24 h-24" />
                 </div>
 
-                <div className={`relative z-10 transition-opacity duration-300 ${fade ? "opacity-100" : "opacity-0"}`}>
+                <div
+                    className="relative z-10"
+                    style={{
+                        opacity: visible ? 1 : 0,
+                        transition: "opacity 0.4s ease-in-out",
+                    }}
+                >
                     <div className="flex items-center gap-2 mb-3 text-amber-600 dark:text-amber-400 font-bold">
                         <Lightbulb className="w-5 h-5 animate-pulse" />
                         <span>豆知識</span>
