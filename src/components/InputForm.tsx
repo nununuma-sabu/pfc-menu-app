@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Loader2, AlertCircle, Lock } from "lucide-react";
+import { Loader2, AlertCircle, Lock, ShieldAlert } from "lucide-react";
 import clsx from "clsx";
 
 interface InputFormProps {
-    onSubmit: (data: { calories: number; p: number; f: number; c: number; mainIngredient?: string; mealCount: number; days: number; fixBreakfast: boolean }) => Promise<void>;
+    onSubmit: (data: { calories: number; p: number; f: number; c: number; mainIngredient?: string; allergies: string; dislikedFoods: string; avoidFoods: string; mealCount: number; days: number; fixBreakfast: boolean }) => Promise<void>;
     isLoading: boolean;
 }
 
@@ -16,6 +16,9 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
     const [fRatio, setFRatio] = useState<string>("25");
     const [cRatio, setCRatio] = useState<string>("60");
     const [mainIngredient, setMainIngredient] = useState<string>("");
+    const [allergies, setAllergies] = useState<string>("");
+    const [dislikedFoods, setDislikedFoods] = useState<string>("");
+    const [avoidFoods, setAvoidFoods] = useState<string>("");
     const [mealCount, setMealCount] = useState<number>(3);
     const [days, setDays] = useState<number>(3);
     const [fixBreakfast, setFixBreakfast] = useState<boolean>(false);
@@ -80,6 +83,9 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
             f: grams.f,
             c: grams.c,
             mainIngredient: mainIngredient.trim(),
+            allergies: allergies.trim(),
+            dislikedFoods: dislikedFoods.trim(),
+            avoidFoods: avoidFoods.trim(),
             mealCount,
             days,
             fixBreakfast
@@ -307,6 +313,59 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                     <p className="text-xs text-zinc-500 mt-1">
                         使いたい食材があれば入力してください。
                     </p>
+                </div>
+
+                {/* Food Exclusion Section */}
+                <div className="space-y-3 p-4 bg-zinc-50 dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-700">
+                    <h3 className="text-sm font-bold text-zinc-700 dark:text-zinc-300">🚫 除外食材</h3>
+
+                    {/* Allergies - Most critical */}
+                    <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-300 dark:border-red-800">
+                        <label className="flex items-center gap-1.5 text-sm font-bold text-red-700 dark:text-red-400 mb-1">
+                            <ShieldAlert className="w-4 h-4" />
+                            アレルギー食材
+                        </label>
+                        <input
+                            type="text"
+                            value={allergies}
+                            onChange={(e) => setAllergies(e.target.value)}
+                            placeholder="例: えび, かに, 小麦, そば"
+                            className="w-full p-2 text-sm border border-red-300 dark:border-red-700 rounded-md bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-red-500"
+                        />
+                        <p className="text-[10px] text-red-500 dark:text-red-400 mt-1 font-medium">
+                            ⚠️ エキス・だし・調味料を含め完全に排除します。カンマ区切りで複数入力可。
+                        </p>
+                    </div>
+
+                    {/* Disliked Foods */}
+                    <div>
+                        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                            😣 苦手な食材
+                        </label>
+                        <input
+                            type="text"
+                            value={dislikedFoods}
+                            onChange={(e) => setDislikedFoods(e.target.value)}
+                            placeholder="例: セロリ, パクチー"
+                            className="w-full p-2 text-sm border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-blue-500"
+                        />
+                        <p className="text-[10px] text-zinc-400 mt-1">使用しません。カンマ区切りで複数入力可。</p>
+                    </div>
+
+                    {/* Avoid Foods */}
+                    <div>
+                        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                            😐 嫌いな食材
+                        </label>
+                        <input
+                            type="text"
+                            value={avoidFoods}
+                            onChange={(e) => setAvoidFoods(e.target.value)}
+                            placeholder="例: ピーマン, なす"
+                            className="w-full p-2 text-sm border border-zinc-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-blue-500"
+                        />
+                        <p className="text-[10px] text-zinc-400 mt-1">できるだけ避けます。カンマ区切りで複数入力可。</p>
+                    </div>
                 </div>
 
                 {/* Days */}

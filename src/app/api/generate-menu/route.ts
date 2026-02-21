@@ -36,7 +36,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { calories, p, f, c, mainIngredient, mealCount = 3, days = 3, fixBreakfast = false } = await request.json();
+    const { calories, p, f, c, mainIngredient, allergies = "", dislikedFoods = "", avoidFoods = "", mealCount = 3, days = 3, fixBreakfast = false } = await request.json();
 
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
@@ -58,9 +58,22 @@ export async function POST(request: Request) {
       prompt += `メイン食材:「${mainIngredient}」を活用。`;
     }
 
+    // 食材除外セクション（アレルギー > 苦手 > 嫌い の順で厳格度が下がる）
+    let exclusionRules = "";
+
+    if (allergies.trim()) {
+      exclusionRules += `\n【絶対禁止・アレルギー食材】以下の食材はアレルギーのため、メイン食材としてはもちろん、エキス・だし汁・ブイヨン・調味料・ソース・ドレッシングの原材料にも一切含めてはならない。これらの食材を含む加工品（例: ${allergies.trim()}のエキスが入った調味料等）も完全に禁止。必ず安全な代替食材を使用すること: ${allergies.trim()}`;
+    }
+    if (dislikedFoods.trim()) {
+      exclusionRules += `\n【使用禁止・苦手な食材】以下の食材はメイン・サブ問わず使用しない: ${dislikedFoods.trim()}`;
+    }
+    if (avoidFoods.trim()) {
+      exclusionRules += `\n【できれば避ける・嫌いな食材】以下の食材はできるだけ使わない（代替がない場合のみ許容）: ${avoidFoods.trim()}`;
+    }
+
     prompt += `
 目標(1日あたり${fixBreakfast ? "、朝食除く" : ""}): ${targetCal}kcal, P${targetP}g, F${targetF}g, C${targetC}g
-
+${exclusionRules}
 条件:
 - 日ごとにジャンル(和/洋/中/エスニック等)と主タンパク源(鶏/魚/豚/牛/豆腐等)を変えて飽き防止
 - 1食あたり主食(ごはん/パン/麺/芋類等)は必ず1種類のみ。ラーメン+ライス、カレーライス+ナンのような主食の重複は禁止
