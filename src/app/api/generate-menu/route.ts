@@ -43,10 +43,10 @@ export async function POST(request: Request) {
 
     // 朝食固定時: 朝食分を差し引いた残りの目標で昼食・夕食等を生成
     const actualMealCount = fixBreakfast ? mealCount - 1 : mealCount;
-    const targetCal = fixBreakfast ? calories - FIXED_BREAKFAST.calories : calories;
-    const targetP = fixBreakfast ? p - FIXED_BREAKFAST.p : p;
-    const targetF = fixBreakfast ? f - FIXED_BREAKFAST.f : f;
-    const targetC = fixBreakfast ? c - FIXED_BREAKFAST.c : c;
+    const targetCal = fixBreakfast ? Math.max(0, calories - FIXED_BREAKFAST.calories) : calories;
+    const targetP = fixBreakfast ? Math.max(0, p - FIXED_BREAKFAST.p) : p;
+    const targetF = fixBreakfast ? Math.max(0, f - FIXED_BREAKFAST.f) : f;
+    const targetC = fixBreakfast ? Math.max(0, c - FIXED_BREAKFAST.c) : c;
 
     const mealTypes = fixBreakfast
       ? (actualMealCount === 2 ? "昼食・夕食" : "昼食・夕食・間食等")
