@@ -5,8 +5,10 @@ import { Loader2, AlertCircle, Lock, ShieldAlert, Calculator } from "lucide-reac
 import clsx from "clsx";
 import TdeeModal from "./TdeeModal";
 
+import { GenerateMenuRequest } from "../types/menu";
+
 interface InputFormProps {
-    onSubmit: (data: { calories: number; p: number; f: number; c: number; mainIngredient?: string; allergies: string; dislikedFoods: string; avoidFoods: string; mealCount: number; days: number; fixBreakfast: boolean }) => Promise<void>;
+    onSubmit: (data: GenerateMenuRequest) => Promise<void>;
     isLoading: boolean;
 }
 

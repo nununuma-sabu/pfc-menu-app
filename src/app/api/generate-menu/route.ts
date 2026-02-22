@@ -1,8 +1,9 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
+import { Meal, DayMenu, MenuData, ShoppingListItem, Nutrition, GenerateMenuRequest } from "@/types/menu";
 
 // 固定朝食: プロテインスムージー
-const FIXED_BREAKFAST = {
+const FIXED_BREAKFAST: Meal = {
   name: "プロテインスムージー",
   timeLabel: "朝食（固定）",
   calories: 270,
@@ -19,7 +20,7 @@ const FIXED_BREAKFAST = {
   steps: ["全材料をブレンダーに入れて撹拌する"],
 };
 
-const FIXED_BREAKFAST_SHOPPING = [
+const FIXED_BREAKFAST_SHOPPING: ShoppingListItem[] = [
   { name: "ホエイプロテイン", amount: "30g×日数分", category: "乾物調味料" },
   { name: "冷凍バナナ", amount: "1本×日数分", category: "野菜" },
   { name: "冷凍ミックスベリー", amount: "100g×日数分", category: "野菜" },
@@ -36,7 +37,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { calories, p, f, c, mainIngredient, allergies = "", dislikedFoods = "", avoidFoods = "", mealCount = 3, days = 3, fixBreakfast = false } = await request.json();
+    const { calories, p, f, c, mainIngredient, allergies = "", dislikedFoods = "", avoidFoods = "", mealCount = 3, days = 3, fixBreakfast = false }: GenerateMenuRequest = await request.json();
 
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
@@ -132,10 +133,11 @@ ${exclusionRules}
         { status: 500 }
       );
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : "メニューの生成に失敗しました。";
     console.error("Gemini API Error:", error);
     return NextResponse.json(
-      { error: "メニューの生成に失敗しました。", details: error.message },
+      { error: "メニューの生成に失敗しました。", details: errorMessage },
       { status: 500 }
     );
   }
@@ -145,11 +147,11 @@ ${exclusionRules}
  * Expand shortened JSON keys from Gemini response to full keys for frontend.
  * Handles both multi-day (days array) and legacy single-day (meals array) formats.
  */
-function expandKeys(data: any): any {
+function expandKeys(data: any): MenuData {
   // Multi-day format
   if (data.days) {
     return {
-      days: data.days.map((day: any) => ({
+      days: data.days.map((day: any): DayMenu => ({
         dayLabel: day.dl || day.dayLabel || "",
         meals: expandMeals(day.meals || []),
         total: expandTotal(day.total || {}),
@@ -161,22 +163,23 @@ function expandKeys(data: any): any {
 
   // Legacy single-day format (backward compatibility)
   if (data.meals) {
+    const total = expandTotal(data.total || {});
     return {
       days: [{
         dayLabel: "1日目",
         meals: expandMeals(data.meals),
-        total: expandTotal(data.total || {}),
+        total,
       }],
       shoppingList: expandShoppingList(data.shoppingList || []),
-      grandTotal: expandTotal(data.total || {}),
+      grandTotal: total,
     };
   }
 
   return data;
 }
 
-function expandMeals(meals: any[]): any[] {
-  return meals.map((m: any) => ({
+function expandMeals(meals: any[]): Meal[] {
+  return meals.map((m: any): Meal => ({
     name: m.n || m.name || "",
     timeLabel: m.t || m.timeLabel || "",
     calories: m.cal || m.calories || 0,
@@ -192,7 +195,7 @@ function expandMeals(meals: any[]): any[] {
   }));
 }
 
-function expandTotal(t: any): any {
+function expandTotal(t: any): Nutrition {
   return {
     calories: t.cal || t.calories || 0,
     p: t.p || 0,
@@ -201,8 +204,8 @@ function expandTotal(t: any): any {
   };
 }
 
-function expandShoppingList(list: any[]): any[] {
-  return list.map((item: any) => ({
+function expandShoppingList(list: any[]): ShoppingListItem[] {
+  return list.map((item: any): ShoppingListItem => ({
     name: item.n || item.name || "",
     amount: item.a || item.amount || "",
     category: item.cat || item.category || "その他",

@@ -7,13 +7,15 @@ import NutritionTip from "@/components/NutritionTip";
 import DisclaimerScreen from "@/components/DisclaimerScreen";
 import { Sparkles } from "lucide-react";
 
+import { MenuData, GenerateMenuRequest, Nutrition } from "@/types/menu";
+
 export default function Home() {
   const [showDisclaimer, setShowDisclaimer] = useState(true);
-  const [menu, setMenu] = useState(null);
+  const [menu, setMenu] = useState<MenuData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleGenerateMenu = async (data: any) => {
+  const handleGenerateMenu = async (data: GenerateMenuRequest) => {
     setMenu(null);
     setLoading(true);
     setError(null);

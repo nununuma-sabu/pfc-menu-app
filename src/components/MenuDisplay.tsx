@@ -4,39 +4,7 @@ import { useState } from "react";
 import { Utensils, Moon, Sun, Sunrise, Coffee, ShoppingCart, Calendar } from "lucide-react";
 import clsx from "clsx";
 
-interface Meal {
-    name: string;
-    timeLabel: string;
-    calories: number;
-    p: number;
-    f: number;
-    c: number;
-    description: string;
-    ingredients?: { name: string; amount: string }[];
-    steps?: string[];
-}
-
-interface DayMenu {
-    dayLabel: string;
-    meals: Meal[];
-    total: {
-        calories: number;
-        p: number;
-        f: number;
-        c: number;
-    };
-}
-
-interface MenuData {
-    days: DayMenu[];
-    shoppingList?: { name: string; amount: string; category?: string }[];
-    grandTotal: {
-        calories: number;
-        p: number;
-        f: number;
-        c: number;
-    };
-}
+import { Meal, DayMenu, MenuData, ShoppingListItem, Nutrition } from "../types/menu";
 
 interface MenuDisplayProps {
     menu: MenuData | null;
@@ -116,7 +84,9 @@ function MealCard({ meal }: { meal: Meal }) {
     );
 }
 
-function TotalBar({ total, label }: { total: { calories: number; p: number; f: number; c: number }; label: string }) {
+
+
+function TotalBar({ total, label }: { total: Nutrition; label: string }) {
     return (
         <div className="bg-zinc-100 dark:bg-zinc-800 p-4 rounded-xl flex flex-wrap justify-between items-center gap-4">
             <h3 className="font-bold text-zinc-700 dark:text-zinc-300 flex items-center gap-2">
@@ -135,7 +105,7 @@ function TotalBar({ total, label }: { total: { calories: number; p: number; f: n
 
 const CATEGORY_ORDER = ["肉魚", "野菜", "乳製品卵", "主食", "乾物調味料", "その他"];
 
-function groupByCategory(list: { name: string; amount: string; category?: string }[]) {
+function groupByCategory(list: ShoppingListItem[]) {
     const groups: Record<string, { name: string; amount: string }[]> = {};
     for (const item of list) {
         const cat = item.category || "その他";
