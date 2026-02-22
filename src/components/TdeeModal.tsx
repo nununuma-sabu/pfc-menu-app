@@ -20,6 +20,8 @@ const ACTIVITY_LEVELS = [
 export default function TdeeModal({ onApply, onClose }: TdeeModalProps) {
     const [weight, setWeight] = useState<string>("");
     const [bodyFat, setBodyFat] = useState<string>("");
+    const [isManualBmr, setIsManualBmr] = useState<boolean>(false);
+    const [manualBmr, setManualBmr] = useState<string>("");
     const [activityIndex, setActivityIndex] = useState<number>(1); // default: 軽い運動
     const [applyRecomp, setApplyRecomp] = useState<boolean>(true);
     const [adjustment, setAdjustment] = useState<string>("0");
@@ -35,11 +37,21 @@ export default function TdeeModal({ onApply, onClose }: TdeeModalProps) {
 
     const calc = useMemo(() => {
         const w = Number(weight);
-        const bf = Number(bodyFat);
-        if (!w || w <= 0 || !bf || bf <= 0 || bf >= 100) return null;
+        if (!w || w <= 0) return null;
 
-        const lbm = w * (1 - bf / 100);
-        const bmr = Math.round(370 + 21.6 * lbm);
+        let bmr = 0;
+        let lbm = 0;
+
+        if (isManualBmr) {
+            bmr = Number(manualBmr) || 0;
+            if (bmr <= 0) return null;
+        } else {
+            const bf = Number(bodyFat);
+            if (!bf || bf <= 0 || bf >= 100) return null;
+            lbm = w * (1 - bf / 100);
+            bmr = Math.round(370 + 21.6 * lbm);
+        }
+
         const tdee = Math.round(bmr * ACTIVITY_LEVELS[activityIndex].factor);
 
         const adjVal = Number(adjustment) || 0;
@@ -56,7 +68,7 @@ export default function TdeeModal({ onApply, onClose }: TdeeModalProps) {
         const cRatio = 100 - pRatio - fRatio;
 
         return { lbm, bmr, tdee, targetCalories, pGrams, pRatio, fRatio, cRatio, cCalsNegative: cCals < 0 };
-    }, [weight, bodyFat, activityIndex, adjustment]);
+    }, [weight, bodyFat, isManualBmr, manualBmr, activityIndex, adjustment]);
 
     const handleApply = () => {
         if (!calc) return;
@@ -103,8 +115,34 @@ export default function TdeeModal({ onApply, onClose }: TdeeModalProps) {
 
                 {/* Body */}
                 <div className="px-5 py-4 space-y-4 max-h-[80vh] overflow-y-auto custom-scrollbar">
+                    {/* Mode Switcher */}
+                    <div className="flex p-1 bg-zinc-100 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-700">
+                        <button
+                            onClick={() => setIsManualBmr(false)}
+                            className={clsx(
+                                "flex-1 py-1.5 text-xs font-bold rounded-lg transition-all",
+                                !isManualBmr
+                                    ? "bg-white dark:bg-zinc-800 text-indigo-600 dark:text-indigo-400 shadow-sm"
+                                    : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+                            )}
+                        >
+                            自動計算
+                        </button>
+                        <button
+                            onClick={() => setIsManualBmr(true)}
+                            className={clsx(
+                                "flex-1 py-1.5 text-xs font-bold rounded-lg transition-all",
+                                isManualBmr
+                                    ? "bg-white dark:bg-zinc-800 text-indigo-600 dark:text-indigo-400 shadow-sm"
+                                    : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+                            )}
+                        >
+                            手動入力 (体組成計)
+                        </button>
+                    </div>
+
                     <p className="text-[11px] text-zinc-400 dark:text-zinc-500">
-                        🔒 体重・体脂肪率はこの画面のみで使用し、保存されません。
+                        🔒 体重・基礎代謝・体脂肪率は計算のみに使用し、保存されません。
                     </p>
 
                     {/* Inputs */}
@@ -121,17 +159,31 @@ export default function TdeeModal({ onApply, onClose }: TdeeModalProps) {
                                 autoFocus
                             />
                         </div>
-                        <div>
-                            <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">体脂肪率 (%)</label>
-                            <input
-                                type="number"
-                                value={bodyFat}
-                                onKeyDown={handleKeyDown}
-                                onChange={(e) => setBodyFat(e.target.value)}
-                                placeholder="20"
-                                className="w-full p-2.5 text-sm border border-zinc-300 dark:border-zinc-600 rounded-lg bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-indigo-500"
-                            />
-                        </div>
+                        {isManualBmr ? (
+                            <div>
+                                <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">基礎代謝 (kcal)</label>
+                                <input
+                                    type="number"
+                                    value={manualBmr}
+                                    onKeyDown={handleKeyDown}
+                                    onChange={(e) => setManualBmr(e.target.value)}
+                                    placeholder="1500"
+                                    className="w-full p-2.5 text-sm border border-zinc-300 dark:border-zinc-600 rounded-lg bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-indigo-500"
+                                />
+                            </div>
+                        ) : (
+                            <div>
+                                <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">体脂肪率 (%)</label>
+                                <input
+                                    type="number"
+                                    value={bodyFat}
+                                    onKeyDown={handleKeyDown}
+                                    onChange={(e) => setBodyFat(e.target.value)}
+                                    placeholder="20"
+                                    className="w-full p-2.5 text-sm border border-zinc-300 dark:border-zinc-600 rounded-lg bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-indigo-500"
+                                />
+                            </div>
+                        )}
                     </div>
 
                     {/* Activity Level */}
