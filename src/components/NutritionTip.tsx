@@ -43,9 +43,9 @@ export default function NutritionTip() {
 
     return (
         <div className="w-full max-w-md mx-auto mt-8 animate-in fade-in zoom-in duration-500">
-            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-6 shadow-sm relative overflow-hidden">
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 shadow-sm relative overflow-hidden">
                 {/* Decorational Icon Background */}
-                <div className="absolute -right-4 -top-4 text-amber-100 dark:text-amber-900/40 transform rotate-12">
+                <div className="absolute -right-4 -top-4 text-amber-100 transform rotate-12">
                     <Lightbulb className="w-24 h-24" />
                 </div>
 
@@ -56,22 +56,22 @@ export default function NutritionTip() {
                         transition: "opacity 0.4s ease-in-out",
                     }}
                 >
-                    <div className="flex items-center gap-2 mb-3 text-amber-600 dark:text-amber-400 font-bold">
+                    <div className="flex items-center gap-2 mb-3 text-amber-700 font-bold">
                         <Lightbulb className="w-5 h-5 animate-pulse" />
                         <span>豆知識</span>
                     </div>
 
-                    <h3 className="text-lg font-bold text-zinc-800 dark:text-zinc-100 mb-1">
+                    <h3 className="text-lg font-bold text-zinc-900 mb-1">
                         {tip.title}
                     </h3>
-                    <p className="text-[10px] text-amber-500 dark:text-amber-500/70 mb-2">{tip.category}</p>
+                    <p className="text-xs text-amber-600 mb-2 font-medium">{tip.category}</p>
 
-                    <p className="text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed">
+                    <p className="text-sm text-zinc-700 leading-relaxed">
                         {tip.content}
                     </p>
                 </div>
             </div>
-            <p className="text-center text-xs text-zinc-400 mt-2 animate-pulse">
+            <p className="text-center text-xs text-zinc-500 mt-2 animate-pulse font-medium">
                 AIが最適な献立を考えています...
             </p>
         </div>
