@@ -108,8 +108,11 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
         setCRatio(preset.c.toString());
     };
 
-    const handleTdeeApply = (data: { calories: number }) => {
+    const handleTdeeApply = (data: { calories: number; pRatio?: number; fRatio?: number; cRatio?: number }) => {
         setCalories(data.calories.toString());
+        if (data.pRatio !== undefined) setPRatio(data.pRatio.toString());
+        if (data.fRatio !== undefined) setFRatio(data.fRatio.toString());
+        if (data.cRatio !== undefined) setCRatio(data.cRatio.toString());
         setShowTdeeModal(false);
         setError(null);
     };
