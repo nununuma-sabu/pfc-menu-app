@@ -40,6 +40,11 @@ export interface MenuData {
     grandTotal: Nutrition;
 }
 
+export interface FixedMeal {
+    recipeId: string;
+    mealIndex: number; // 0: 1食目, 1: 2食目 ...
+}
+
 export interface GenerateMenuRequest {
     calories: number;
     p: number;
@@ -51,5 +56,5 @@ export interface GenerateMenuRequest {
     avoidFoods: string;
     mealCount: number;
     days: number;
-    fixBreakfast: boolean;
+    fixedMeals?: FixedMeal[];
 }

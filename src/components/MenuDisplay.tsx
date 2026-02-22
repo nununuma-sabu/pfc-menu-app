@@ -22,33 +22,33 @@ function MealCard({ meal }: { meal: Meal }) {
     const { icon: Icon, color } = getMealStyle(meal.timeLabel);
 
     return (
-        <div className="bg-white dark:bg-zinc-800 rounded-xl shadow-md overflow-hidden border border-zinc-100 dark:border-zinc-700 hover:shadow-lg transition-shadow flex flex-col h-full">
+        <div className="bg-white  rounded-xl shadow-md overflow-hidden border border-zinc-100  hover:shadow-lg transition-shadow flex flex-col h-full">
             <div className={`p-4 ${color} text-white flex items-center gap-2`}>
                 <Icon className="w-5 h-5" />
                 <h3 className="font-bold text-lg">{meal.timeLabel}</h3>
             </div>
             <div className="p-4 space-y-4 flex-1 flex flex-col">
                 <div>
-                    <h4 className="font-bold text-xl text-zinc-900 dark:text-white mb-2">{meal.name}</h4>
-                    <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">{meal.description}</p>
+                    <h4 className="font-bold text-xl text-zinc-900  mb-2">{meal.name}</h4>
+                    <p className="text-sm text-zinc-600  leading-relaxed">{meal.description}</p>
                 </div>
 
-                <div className="bg-zinc-50 dark:bg-zinc-900 p-3 rounded-lg grid grid-cols-4 gap-2 text-center text-sm">
+                <div className="bg-zinc-50  p-3 rounded-lg grid grid-cols-4 gap-2 text-center text-sm">
                     <div>
                         <div className="text-zinc-500 text-xs">Cal</div>
-                        <div className="font-bold text-zinc-800 dark:text-zinc-200">{meal.calories}</div>
+                        <div className="font-bold text-zinc-800 ">{meal.calories}</div>
                     </div>
                     <div>
                         <div className="text-zinc-500 text-xs">P</div>
-                        <div className="font-bold text-zinc-800 dark:text-zinc-200">{meal.p}g</div>
+                        <div className="font-bold text-zinc-800 ">{meal.p}g</div>
                     </div>
                     <div>
                         <div className="text-zinc-500 text-xs">F</div>
-                        <div className="font-bold text-zinc-800 dark:text-zinc-200">{meal.f}g</div>
+                        <div className="font-bold text-zinc-800 ">{meal.f}g</div>
                     </div>
                     <div>
                         <div className="text-zinc-500 text-xs">C</div>
-                        <div className="font-bold text-zinc-800 dark:text-zinc-200">{meal.c}g</div>
+                        <div className="font-bold text-zinc-800 ">{meal.c}g</div>
                     </div>
                 </div>
 
@@ -57,10 +57,10 @@ function MealCard({ meal }: { meal: Meal }) {
                     <div className="mt-auto pt-2 space-y-3">
                         {meal.ingredients && meal.ingredients.length > 0 && (
                             <div className="text-sm">
-                                <h5 className="font-bold text-zinc-700 dark:text-zinc-300 mb-1 flex items-center gap-1">
+                                <h5 className="font-bold text-zinc-700  mb-1 flex items-center gap-1">
                                     <Utensils className="w-3 h-3" /> 材料
                                 </h5>
-                                <ul className="list-disc list-inside text-zinc-600 dark:text-zinc-400 pl-1 space-y-0.5 text-xs">
+                                <ul className="list-disc list-inside text-zinc-600  pl-1 space-y-0.5 text-xs">
                                     {meal.ingredients.map((ing, i) => (
                                         <li key={i}>{ing.name} <span className="text-zinc-400">({ing.amount})</span></li>
                                     ))}
@@ -69,8 +69,8 @@ function MealCard({ meal }: { meal: Meal }) {
                         )}
                         {meal.steps && meal.steps.length > 0 && (
                             <div className="text-sm">
-                                <h5 className="font-bold text-zinc-700 dark:text-zinc-300 mb-1">調理手順</h5>
-                                <ol className="list-decimal list-inside text-zinc-600 dark:text-zinc-400 pl-1 space-y-1 text-xs">
+                                <h5 className="font-bold text-zinc-700  mb-1">調理手順</h5>
+                                <ol className="list-decimal list-inside text-zinc-600  pl-1 space-y-1 text-xs">
                                     {meal.steps.map((step, i) => (
                                         <li key={i}>{step}</li>
                                     ))}
@@ -88,8 +88,8 @@ function MealCard({ meal }: { meal: Meal }) {
 
 function TotalBar({ total, label }: { total: Nutrition; label: string }) {
     return (
-        <div className="bg-zinc-100 dark:bg-zinc-800 p-4 rounded-xl flex flex-wrap justify-between items-center gap-4">
-            <h3 className="font-bold text-zinc-700 dark:text-zinc-300 flex items-center gap-2">
+        <div className="bg-zinc-100  p-4 rounded-xl flex flex-wrap justify-between items-center gap-4">
+            <h3 className="font-bold text-zinc-700  flex items-center gap-2">
                 <Utensils className="w-5 h-5" />
                 {label}
             </h3>
@@ -148,7 +148,7 @@ export default function MenuDisplay({ menu }: MenuDisplayProps) {
                                 "flex-1 py-3 px-4 rounded-xl font-bold text-sm border-2 transition-all flex items-center justify-center gap-2",
                                 activeDay === index
                                     ? "bg-emerald-600 text-white border-emerald-600 shadow-lg shadow-emerald-600/20"
-                                    : "bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700 hover:border-emerald-300 dark:hover:border-emerald-700"
+                                    : "bg-white  text-zinc-600  border-zinc-200  hover:border-emerald-300 "
                             )}
                         >
                             <Calendar className="w-4 h-4" />
@@ -175,23 +175,23 @@ export default function MenuDisplay({ menu }: MenuDisplayProps) {
 
             {/* Shopping List */}
             {menu.shoppingList && menu.shoppingList.length > 0 && (
-                <div className="bg-white dark:bg-zinc-800 p-6 rounded-xl shadow-md border border-zinc-100 dark:border-zinc-700">
-                    <h3 className="font-bold text-xl text-zinc-800 dark:text-white mb-4 flex items-center gap-2">
-                        <span className="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 p-2 rounded-lg">
+                <div className="bg-white  p-6 rounded-xl shadow-md border border-zinc-100 ">
+                    <h3 className="font-bold text-xl text-zinc-800  mb-4 flex items-center gap-2">
+                        <span className="bg-indigo-100  text-indigo-600  p-2 rounded-lg">
                             <ShoppingCart className="w-5 h-5" />
                         </span>
                         買い物リスト {isMultiDay && <span className="text-sm font-normal text-zinc-500">（{menu.days.length}日分統合）</span>}
                     </h3>
                     {groupByCategory(menu.shoppingList).map(([category, items]) => (
                         <div key={category} className="mb-4">
-                            <h4 className="text-sm font-bold text-zinc-600 dark:text-zinc-400 mb-2 border-b border-zinc-200 dark:border-zinc-700 pb-1">
+                            <h4 className="text-sm font-bold text-zinc-600  mb-2 border-b border-zinc-200  pb-1">
                                 {category}
                             </h4>
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                                 {items.map((item, index) => (
-                                    <div key={index} className="flex items-center gap-2 p-2 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-700/50 transition-colors">
+                                    <div key={index} className="flex items-center gap-2 p-2 rounded-lg hover:bg-zinc-50  transition-colors">
                                         <input type="checkbox" className="w-4 h-4 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500" />
-                                        <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                                        <span className="text-sm text-zinc-700 ">
                                             {item.name} <span className="text-zinc-400 text-xs">({item.amount})</span>
                                         </span>
                                     </div>
