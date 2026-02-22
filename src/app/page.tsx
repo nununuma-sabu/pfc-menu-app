@@ -14,6 +14,7 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
 
   const handleGenerateMenu = async (data: any) => {
+    setMenu(null);
     setLoading(true);
     setError(null);
     try {
