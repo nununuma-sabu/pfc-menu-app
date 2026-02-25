@@ -8,15 +8,19 @@ import type { NextRequest } from "next/server";
 //
 // 制限: 1IPアドレスあたり 1分間に5回まで
 // 環境変数が未設定の場合はレートリミットをスキップ（開発環境向け）
+//
+// ※ lazy initialization: リクエスト時に環境変数を確認することで、
+//    テスト時に後から環境変数をセットした場合にも正しく動作する
 // ─────────────────────────────────────────────
 
-let ratelimit: Ratelimit | null = null;
-
-if (
-    process.env.UPSTASH_REDIS_REST_URL &&
-    process.env.UPSTASH_REDIS_REST_TOKEN
-) {
-    ratelimit = new Ratelimit({
+function getRatelimit(): Ratelimit | null {
+    if (
+        !process.env.UPSTASH_REDIS_REST_URL ||
+        !process.env.UPSTASH_REDIS_REST_TOKEN
+    ) {
+        return null;
+    }
+    return new Ratelimit({
         redis: Redis.fromEnv(),
         limiter: Ratelimit.slidingWindow(5, "1 m"),
         analytics: true,
@@ -26,7 +30,8 @@ if (
 
 export async function middleware(request: NextRequest) {
     // レートリミット設定がない場合はスキップ（ローカル開発環境）
-    if (!ratelimit) {
+    const rl = getRatelimit();
+    if (!rl) {
         return NextResponse.next();
     }
 
@@ -36,7 +41,7 @@ export async function middleware(request: NextRequest) {
         request.headers.get("x-real-ip") ??
         "anonymous";
 
-    const { success, limit, remaining, reset } = await ratelimit.limit(ip);
+    const { success, limit, remaining, reset } = await rl.limit(ip);
 
     if (!success) {
         const retryAfterSec = Math.ceil((reset - Date.now()) / 1000);
