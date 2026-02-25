@@ -226,6 +226,93 @@ export const PRESET_SMOOTHIE_SHOPPING: ShoppingListItem[] = [
 ];
 
 // ─────────────────────────────────────────────
+// 買い物リスト合算ヘルパー
+// ─────────────────────────────────────────────
+
+/**
+ * 食材名を正規化する（表記揺れ対策）。
+ * 全角/半角スペース除去、前後空白除去。
+ */
+export function normalizeItemName(name: string): string {
+  return name
+    .replace(/[\s\u3000]+/g, "")
+    .trim();
+}
+
+/**
+ * 分量文字列をパースし、数値と単位に分離する。
+ * 例: "100g" → { value: 100, unit: "g" }
+ * パース不可の場合は null を返す。
+ */
+export function parseAmount(amount: string): { value: number; unit: string } | null {
+  const match = amount.match(/^([\d.]+)\s*(.+)$/);
+  if (!match) return null;
+  const value = parseFloat(match[1]);
+  if (isNaN(value)) return null;
+  return { value, unit: match[2].trim() };
+}
+
+/**
+ * 買い物リストを合算・統合する。
+ * - 正規化された名前 + 単位で同一食材を判定
+ * - 同じ単位なら数値を合算
+ * - 異なる単位 or パース不可なら並記
+ */
+export function mergeShoppingList(
+  existing: ShoppingListItem[],
+  additions: ShoppingListItem[],
+  multiplier: number = 1
+): ShoppingListItem[] {
+  const result = existing.map(item => ({ ...item }));
+
+  for (const addition of additions) {
+    const normalizedAddName = normalizeItemName(addition.name);
+    const addParsed = parseAmount(addition.amount);
+
+    // 既存リストで同一食材を探す
+    const existingItem = result.find(
+      si => normalizeItemName(si.name) === normalizedAddName
+    );
+
+    if (existingItem) {
+      const existingParsed = parseAmount(existingItem.amount);
+
+      if (existingParsed && addParsed && existingParsed.unit === addParsed.unit) {
+        // 同じ単位 → 数値合算
+        const total = existingParsed.value + addParsed.value * multiplier;
+        existingItem.amount = `${total}${existingParsed.unit}`;
+      } else {
+        // 単位不一致 or パース不可 → 並記
+        const addAmount = multiplier > 1
+          ? `${addition.amount} x ${multiplier}日分`
+          : addition.amount;
+        if (!existingItem.amount.includes(addAmount)) {
+          existingItem.amount = `${existingItem.amount} + ${addAmount}`;
+        }
+      }
+    } else {
+      // 新規食材の追加
+      const addParsedForNew = parseAmount(addition.amount);
+      let newAmount: string;
+      if (addParsedForNew && multiplier > 1) {
+        const total = addParsedForNew.value * multiplier;
+        newAmount = `${total}${addParsedForNew.unit}`;
+      } else if (multiplier > 1) {
+        newAmount = `${addition.amount} x ${multiplier}日分`;
+      } else {
+        newAmount = addition.amount;
+      }
+      result.push({
+        ...addition,
+        amount: newAmount,
+      });
+    }
+  }
+
+  return result;
+}
+
+// ─────────────────────────────────────────────
 // POST ハンドラ
 // ─────────────────────────────────────────────
 
@@ -262,7 +349,7 @@ export async function POST(request: Request) {
     const genAI = new GoogleGenerativeAI(apiKey);
 
     // System Instruction: システムの役割とルールを定義（ユーザー入力と分離）
-    const systemInstruction = `あなたは管理栄養士AIです。ユーザーが指定した栄養目標に合わせて、日本の家庭料理ベースの献立を提案してください。
+    const systemInstruction = `ユーザーが指定した栄養目標に合わせて、家庭料理ベースの献立を提案してください。
 条件:
 - 日ごとにジャンル(和/洋/中/エスニック等)と主タンパク源(鶏/魚/豚/牛/豆腐等)を変えて飽き防止
 - 1食あたり主食(ごはん/パン/麺/芋類等)は必ず1種類のみ。ラーメン+ライス、カレーライス+ナンのような主食の重複は禁止
@@ -292,7 +379,18 @@ export async function POST(request: Request) {
       }
     });
 
-    const targetCal = Math.max(0, calories - fixedCal);
+    // ガード: 固定メニューが目標カロリーを超過していないか検証
+    if (fixedMeals.length > 0 && fixedCal >= calories) {
+      return NextResponse.json(
+        {
+          error: "固定メニューのカロリーが目標カロリー以上です。目標カロリーを上げるか、固定メニューを減らしてください。",
+          details: { fixedCalories: fixedCal, targetCalories: calories }
+        },
+        { status: 400 }
+      );
+    }
+
+    const targetCal = calories - fixedCal;
     const targetP = Math.max(0, p - fixedP);
     const targetF = Math.max(0, f - fixedF);
     const targetC = Math.max(0, c - fixedC);
@@ -348,24 +446,20 @@ ${safeMainIngredient ? `メイン食材の希望: ${safeMainIngredient}` : ""}
         day.total.c = day.meals.reduce((sum, m) => sum + m.c, 0);
       });
 
-      // 買い物リストの合算（全日分）
+      // 買い物リストの合算（改善版: 正規化 + 数値合算）
+      let fixedShoppingItems: ShoppingListItem[] = [];
       fixedMeals.forEach(fm => {
         if (fm.recipeId === "protein-smoothie") {
-          PRESET_SMOOTHIE_SHOPPING.forEach(item => {
-            const existing = menuData.shoppingList!.find(si => si.name === item.name);
-            if (existing) {
-              if (!existing.amount.includes("x")) {
-                existing.amount = `${existing.amount} x ${days}日分`;
-              }
-            } else {
-              menuData.shoppingList!.push({
-                ...item,
-                amount: `${item.amount} x ${days}日分`
-              });
-            }
-          });
+          fixedShoppingItems = fixedShoppingItems.concat(PRESET_SMOOTHIE_SHOPPING);
         }
       });
+      if (fixedShoppingItems.length > 0) {
+        menuData.shoppingList = mergeShoppingList(
+          menuData.shoppingList!,
+          fixedShoppingItems,
+          days
+        );
+      }
 
       // 総合計を再計算
       menuData.grandTotal.calories = menuData.days.reduce((sum, d) => sum + d.total.calories, 0);
