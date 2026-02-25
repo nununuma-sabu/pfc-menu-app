@@ -526,6 +526,21 @@ ${safeMainIngredient ? `メイン食材の希望: ${safeMainIngredient}` : ""}
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : "メニューの生成に失敗しました。";
     console.error("Gemini API Error:", error);
+
+    // 429 (レート制限) の場合は専用メッセージと 429 ステータスを返す
+    if (
+      errorMessage.includes("サーバーが混み合っています") ||
+      errorMessage.includes("429") ||
+      errorMessage.includes("Too Many Requests") ||
+      errorMessage.includes("quota") ||
+      errorMessage.includes("RESOURCE_EXHAUSTED")
+    ) {
+      return NextResponse.json(
+        { error: errorMessage },
+        { status: 429 }
+      );
+    }
+
     return NextResponse.json(
       { error: "メニューの生成に失敗しました。", details: errorMessage },
       { status: 500 }
