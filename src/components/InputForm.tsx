@@ -200,7 +200,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                             {fixedMeals.map((fm, idx) => {
                                 const recipe = FAVORITE_RECIPES.find(r => r.id === fm.recipeId);
                                 return (
-                                    <div key={idx} className="flex items-center justify-between bg-white p-2 rounded border border-indigo-100 text-xs">
+                                    <div key={fm.mealIndex} className="flex items-center justify-between bg-white p-2 rounded border border-indigo-100 text-xs">
                                         <div className="flex flex-col">
                                             <span className="font-bold text-indigo-600">{fm.mealIndex + 1}食目</span>
                                             <span className="text-zinc-600">{recipe?.name}</span>
