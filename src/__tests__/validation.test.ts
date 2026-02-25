@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { z } from "zod";
 import { generateMenuRequestSchema } from "@/app/api/generate-menu/validation";
 
 describe("generateMenuRequestSchema", () => {
@@ -62,7 +63,7 @@ describe("generateMenuRequestSchema", () => {
         const result = generateMenuRequestSchema.safeParse(invalidData);
         expect(result.success).toBe(false);
         if (!result.success) {
-            const fieldErrors = result.error.flatten().fieldErrors;
+            const fieldErrors = z.flattenError(result.error).fieldErrors;
             expect(fieldErrors.calories).toBeDefined();
         }
     });
@@ -78,7 +79,7 @@ describe("generateMenuRequestSchema", () => {
         const result = generateMenuRequestSchema.safeParse(invalidData);
         expect(result.success).toBe(false);
         if (!result.success) {
-            expect(result.error.flatten().fieldErrors.p).toBeDefined();
+            expect(z.flattenError(result.error).fieldErrors.p).toBeDefined();
         }
     });
 
@@ -120,7 +121,7 @@ describe("generateMenuRequestSchema", () => {
         const result = generateMenuRequestSchema.safeParse(invalidData);
         expect(result.success).toBe(false);
         if (!result.success) {
-            expect(result.error.flatten().fieldErrors.mealCount).toBeDefined();
+            expect(z.flattenError(result.error).fieldErrors.mealCount).toBeDefined();
         }
     });
 
@@ -148,7 +149,7 @@ describe("generateMenuRequestSchema", () => {
         const result = generateMenuRequestSchema.safeParse(invalidData);
         expect(result.success).toBe(false);
         if (!result.success) {
-            expect(result.error.flatten().fieldErrors.days).toBeDefined();
+            expect(z.flattenError(result.error).fieldErrors.days).toBeDefined();
         }
     });
 
@@ -177,7 +178,7 @@ describe("generateMenuRequestSchema", () => {
         const result = generateMenuRequestSchema.safeParse(invalidData);
         expect(result.success).toBe(false);
         if (!result.success) {
-            expect(result.error.flatten().fieldErrors.calories).toBeDefined();
+            expect(z.flattenError(result.error).fieldErrors.calories).toBeDefined();
         }
     });
 
@@ -190,7 +191,7 @@ describe("generateMenuRequestSchema", () => {
         const result = generateMenuRequestSchema.safeParse(invalidData);
         expect(result.success).toBe(false);
         if (!result.success) {
-            const fieldErrors = result.error.flatten().fieldErrors;
+            const fieldErrors = z.flattenError(result.error).fieldErrors;
             expect(fieldErrors.calories).toBeDefined();
             expect(fieldErrors.p).toBeDefined();
             expect(fieldErrors.f).toBeDefined();

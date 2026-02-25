@@ -2,6 +2,7 @@ import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 import type { GenerativeModel, ResponseSchema } from "@google/generative-ai";
 import { NextResponse } from "next/server";
 import { Meal, MenuData, ShoppingListItem } from "@/types/menu";
+import { z } from "zod";
 import { generateMenuRequestSchema } from "./validation";
 
 // ─────────────────────────────────────────────
@@ -242,7 +243,7 @@ export async function POST(request: Request) {
     const parseResult = generateMenuRequestSchema.safeParse(rawBody);
     if (!parseResult.success) {
       return NextResponse.json(
-        { error: "入力データが不正です。", details: parseResult.error.flatten() },
+        { error: "入力データが不正です。", details: z.flattenError(parseResult.error) },
         { status: 400 }
       );
     }
