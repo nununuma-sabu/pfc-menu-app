@@ -102,6 +102,18 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
     const totalRatio = (Number(pRatio) || 0) + (Number(fRatio) || 0) + (Number(cRatio) || 0);
     const isInvalidTotal = totalRatio !== 100;
 
+    // 固定メニューの合計カロリーを計算
+    const fixedCalories = useMemo(() => {
+        return fixedMeals.reduce((sum, fm) => {
+            const recipe = FAVORITE_RECIPES.find(r => r.id === fm.recipeId);
+            return sum + (recipe?.calories ?? 0);
+        }, 0);
+    }, [fixedMeals]);
+
+    // カロリー超過チェック（バックエンドと同じ条件: fixedCal >= targetCal）
+    const targetCalories = Number(calories) || 0;
+    const isCalorieExceeded = fixedMeals.length > 0 && fixedCalories >= targetCalories;
+
     const PRESETS = [
         { name: "標準バランス", p: 15, f: 25, c: 60, color: "bg-blue-100 text-blue-700   border-blue-200 " },
         { name: "ローファット", p: 30, f: 10, c: 60, color: "bg-green-100 text-green-700   border-green-200 " },
@@ -462,6 +474,16 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                         )}
                     </div>
 
+                    {isCalorieExceeded && (
+                        <div className="text-red-500 text-sm bg-red-50 p-3 rounded-lg border border-red-200 flex items-start gap-2">
+                            <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                            <span>
+                                固定メニューの合計カロリー（{fixedCalories} kcal）が目標カロリー（{targetCalories} kcal）以上です。<br />
+                                目標カロリーを上げるか、固定メニューを減らしてください。
+                            </span>
+                        </div>
+                    )}
+
                     {error && (
                         <div className="text-red-500 text-sm bg-red-50  p-3 rounded-lg border border-red-200 ">
                             {error}
@@ -471,10 +493,10 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
 
                 <button
                     type="submit"
-                    disabled={isLoading || isInvalidTotal}
+                    disabled={isLoading || isInvalidTotal || isCalorieExceeded}
                     className={clsx(
                         "w-full py-3 px-4 mt-6 rounded-lg font-bold text-white transition-all",
-                        (isLoading || isInvalidTotal)
+                        (isLoading || isInvalidTotal || isCalorieExceeded)
                             ? "bg-zinc-400 cursor-not-allowed"
                             : "bg-blue-600 hover:bg-blue-700 active:scale-95 shadow-md hover:shadow-lg"
                     )}
