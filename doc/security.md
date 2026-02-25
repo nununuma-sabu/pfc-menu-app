@@ -141,11 +141,50 @@ if (
 
 ---
 
+## 対策5: レートリミット（DoS / APIクオータ枯渇対策）
+
+Botや悪意あるユーザーが `/api/generate-menu` に大量リクエストを送った場合、Gemini APIの1日の無料枠（1,500回）をあっという間に消費します。  
+これを防ぐため、**`@upstash/ratelimit` を使ったIPベースのレートリミット**をNext.jsミドルウェアとして実装しています。
+
+### 実装ファイル: `src/middleware.ts`
+
+```ts
+// 制限: 1IPアドレスあたり 1分間に5回まで（スライディングウィンドウ）
+const ratelimit = new Ratelimit({
+    redis: Redis.fromEnv(),
+    limiter: Ratelimit.slidingWindow(5, "1 m"),
+    analytics: true,
+    prefix: "pfc:ratelimit",
+});
+```
+
+- **アルゴリズム**: スライディングウィンドウ方式（固定ウィンドウより滑らか）
+- **超過時**: `429 Too Many Requests` を即返却し、Gemini API は呼ばない
+- **環境変数未設定時**: ミドルウェアをスキップする（ローカル開発環境への影響なし）
+
+### 必要な環境変数
+
+```env
+UPSTASH_REDIS_REST_URL=https://xxxx.upstash.io
+UPSTASH_REDIS_REST_TOKEN=your_upstash_token_here
+```
+
+[Upstash コンソール](https://console.upstash.com/) で Redis DBを作成すると取得できます。
+
+### レスポンスヘッダー
+
+| ヘッダー | 内容 |
+|---|---|
+| `X-RateLimit-Limit` | 制限回数（5） |
+| `X-RateLimit-Remaining` | 残り使用可能回数 |
+| `Retry-After` | 超過時：次にリクエスト可能になるまでの秒数 |
+
+---
+
 ## 対策外・今後の検討事項
 
 | 項目 | 現状 | 備考 |
 |---|---|---|
 | 認証・認可 | Supabase Auth 実装済み | ユーザー識別は可能 |
-| ユーザーあたりのレート制限 | 未実装 | 必要に応じてミドルウェアで対応 |
 | 出力内容の後処理バリデーション | 未実装 | AIの栄養計算値のサニティチェック等 |
-| パターン拡充 | 随時 | 新たなインジェクション手法に対応 |
+| インジェクションパターンの拡充 | 随時 | 新たな手法に対応 |
