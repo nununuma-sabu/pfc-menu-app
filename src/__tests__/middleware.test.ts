@@ -10,11 +10,11 @@ const mockLimit = vi.fn();
 
 vi.mock("@upstash/ratelimit", () => {
     // function 構文でクラスコンストラクタとして動くモックを作成
+    // slidingWindow は最初からプロパティとして定義（as any 不要）
     function MockRatelimit() {
         return { limit: mockLimit };
     }
-    // 静的メソッドのモック
-    (MockRatelimit as any).slidingWindow = vi.fn().mockReturnValue("sliding-window-limiter");
+    MockRatelimit.slidingWindow = vi.fn().mockReturnValue("sliding-window-limiter");
     return { Ratelimit: MockRatelimit };
 });
 
