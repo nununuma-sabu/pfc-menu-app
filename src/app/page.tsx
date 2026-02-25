@@ -7,7 +7,7 @@ import NutritionTip from "@/components/NutritionTip";
 import DisclaimerScreen from "@/components/DisclaimerScreen";
 import { Sparkles } from "lucide-react";
 
-import { MenuData, GenerateMenuRequest, Nutrition } from "@/types/menu";
+import { MenuData, GenerateMenuRequest } from "@/types/menu";
 
 export default function Home() {
   const [showDisclaimer, setShowDisclaimer] = useState(true);
@@ -35,8 +35,8 @@ export default function Home() {
 
       const result = await res.json();
       setMenu(result);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "メニューの生成に失敗しました。");
     } finally {
       setLoading(false);
     }

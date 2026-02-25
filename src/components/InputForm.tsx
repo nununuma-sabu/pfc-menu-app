@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { Loader2, AlertCircle, Lock, ShieldAlert, Calculator } from "lucide-react";
 import clsx from "clsx";
 import TdeeModal from "./TdeeModal";
@@ -43,22 +43,18 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
 
     const [error, setError] = useState<string | null>(null);
 
-    // Calculated grams (for display)
-    const [grams, setGrams] = useState({ p: 0, f: 0, c: 0 });
-
-    useEffect(() => {
+    // Calculated grams (derived from state via useMemo)
+    const grams = useMemo(() => {
         const cal = Number(calories) || 0;
         const p = Number(pRatio) || 0;
         const f = Number(fRatio) || 0;
         const c = Number(cRatio) || 0;
 
-        // Calculate grams: Calorie ratio -> Grams
-        // P: 4kcal/g, F: 9kcal/g, C: 4kcal/g
-        setGrams({
+        return {
             p: Math.round((cal * (p / 100)) / 4),
             f: Math.round((cal * (f / 100)) / 9),
             c: Math.round((cal * (c / 100)) / 4),
-        });
+        };
     }, [calories, pRatio, fRatio, cRatio]);
 
     const handleSubmit = (e: React.FormEvent) => {

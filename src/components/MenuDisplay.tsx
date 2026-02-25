@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Utensils, Moon, Sun, Sunrise, Coffee, ShoppingCart, Calendar } from "lucide-react";
 import clsx from "clsx";
 
-import { Meal, DayMenu, MenuData, ShoppingListItem, Nutrition } from "../types/menu";
+import { Meal, MenuData, ShoppingListItem, Nutrition } from "../types/menu";
 
 interface MenuDisplayProps {
     menu: MenuData | null;

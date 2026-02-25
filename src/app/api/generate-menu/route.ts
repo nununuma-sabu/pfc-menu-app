@@ -1,9 +1,69 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
-import { Meal, DayMenu, MenuData, ShoppingListItem, Nutrition, GenerateMenuRequest, FixedMeal } from "@/types/menu";
+import { Meal, DayMenu, MenuData, ShoppingListItem, Nutrition, GenerateMenuRequest } from "@/types/menu";
+
+// Gemini APIのレスポンスJSON構造（短縮キー含む）
+interface RawIngredient {
+  n?: string;
+  name?: string;
+  a?: string;
+  amount?: string;
+}
+
+interface RawMeal {
+  n?: string;
+  name?: string;
+  t?: string;
+  timeLabel?: string;
+  cal?: number;
+  calories?: number;
+  p?: number;
+  f?: number;
+  c?: number;
+  d?: string;
+  description?: string;
+  ing?: RawIngredient[];
+  ingredients?: RawIngredient[];
+  st?: string[];
+  steps?: string[];
+}
+
+interface RawNutrition {
+  cal?: number;
+  calories?: number;
+  p?: number;
+  f?: number;
+  c?: number;
+}
+
+interface RawDay {
+  dl?: string;
+  dayLabel?: string;
+  meals?: RawMeal[];
+  total?: RawNutrition;
+}
+
+interface RawShoppingItem {
+  n?: string;
+  name?: string;
+  a?: string;
+  amount?: string;
+  cat?: string;
+  category?: string;
+}
+
+interface RawMenuResponse {
+  days?: RawDay[];
+  meals?: RawMeal[];
+  sl?: RawShoppingItem[];
+  shoppingList?: RawShoppingItem[];
+  gt?: RawNutrition;
+  grandTotal?: RawNutrition;
+  total?: RawNutrition;
+}
 
 // お気に入りレシピプリセット: プロテインスムージー
-const PRESET_SMOOTHIE: Meal = {
+export const PRESET_SMOOTHIE: Meal = {
   name: "プロテインスムージー",
   timeLabel: "固定メニュー",
   calories: 270,
@@ -20,7 +80,7 @@ const PRESET_SMOOTHIE: Meal = {
   steps: ["全材料をブレンダーに入れて撹拌する"],
 };
 
-const PRESET_SMOOTHIE_SHOPPING: ShoppingListItem[] = [
+export const PRESET_SMOOTHIE_SHOPPING: ShoppingListItem[] = [
   { name: "ホエイプロテイン", amount: "30g", category: "乾物調味料" },
   { name: "冷凍バナナ", amount: "1本", category: "野菜" },
   { name: "冷凍ミックスベリー", amount: "100g", category: "野菜" },
@@ -66,7 +126,7 @@ export async function POST(request: Request) {
     // AIが生成する食事の数
     const aiGeneratedMealCount = mealCount - fixedMeals.length;
 
-    let prompt = `
+    const prompt = `
       ${days}日分の献立を提案してください。
       一日${mealCount}食。
       ${fixedMeals.length > 0 ? `ただし、そのうち以下の食事枠は固定レシピ（プロテインスムージー等）をこちらで挿入するため、AIは提案しないでください：
@@ -133,7 +193,7 @@ export async function POST(request: Request) {
       if (fixedMeals.length > 0) {
         if (!menuData.shoppingList) menuData.shoppingList = [];
 
-        menuData.days.forEach((day, dIdx) => {
+        menuData.days.forEach((day) => {
           const sortedFixedMeals = [...fixedMeals].sort((a, b) => a.mealIndex - b.mealIndex);
           sortedFixedMeals.forEach(fm => {
             let mealToInsert: Meal | null = null;
@@ -205,11 +265,11 @@ export async function POST(request: Request) {
  * Expand shortened JSON keys from Gemini response to full keys for frontend.
  * Handles both multi-day (days array) and legacy single-day (meals array) formats.
  */
-function expandKeys(data: any): MenuData {
+export function expandKeys(data: RawMenuResponse): MenuData {
   // Multi-day format
   if (data.days) {
     return {
-      days: data.days.map((day: any): DayMenu => ({
+      days: data.days.map((day): DayMenu => ({
         dayLabel: day.dl || day.dayLabel || "",
         meals: expandMeals(day.meals || []),
         total: expandTotal(day.total || {}),
@@ -233,11 +293,11 @@ function expandKeys(data: any): MenuData {
     };
   }
 
-  return data;
+  return { days: [], grandTotal: { calories: 0, p: 0, f: 0, c: 0 } };
 }
 
-function expandMeals(meals: any[]): Meal[] {
-  return meals.map((m: any): Meal => ({
+export function expandMeals(meals: RawMeal[]): Meal[] {
+  return meals.map((m): Meal => ({
     name: m.n || m.name || "",
     timeLabel: m.t || m.timeLabel || "",
     calories: m.cal || m.calories || 0,
@@ -245,7 +305,7 @@ function expandMeals(meals: any[]): Meal[] {
     f: m.f || 0,
     c: m.c || 0,
     description: m.d || m.description || "",
-    ingredients: (m.ing || m.ingredients || []).map((i: any) => ({
+    ingredients: (m.ing || m.ingredients || []).map((i: RawIngredient) => ({
       name: i.n || i.name || "",
       amount: i.a || i.amount || "",
     })),
@@ -253,7 +313,7 @@ function expandMeals(meals: any[]): Meal[] {
   }));
 }
 
-function expandTotal(t: any): Nutrition {
+export function expandTotal(t: RawNutrition): Nutrition {
   return {
     calories: t.cal || t.calories || 0,
     p: t.p || 0,
@@ -262,8 +322,8 @@ function expandTotal(t: any): Nutrition {
   };
 }
 
-function expandShoppingList(list: any[]): ShoppingListItem[] {
-  return list.map((item: any): ShoppingListItem => ({
+export function expandShoppingList(list: RawShoppingItem[]): ShoppingListItem[] {
+  return list.map((item): ShoppingListItem => ({
     name: item.n || item.name || "",
     amount: item.a || item.amount || "",
     category: item.cat || item.category || "その他",
