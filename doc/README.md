@@ -7,6 +7,7 @@ AI PFC Menu Generator の技術的な仕様・設計方針についてまとめ�
 | ドキュメント | 内容 |
 |---|---|
 | [validation.md](./validation.md) | 入力バリデーション設計（フロントエンド／バックエンド） |
+| [security.md](./security.md) | セキュリティ設計（プロンプトインジェクション対策・構造化出力） |
 
 ---
 
