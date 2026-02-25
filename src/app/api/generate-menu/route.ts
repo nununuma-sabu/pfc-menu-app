@@ -222,8 +222,22 @@ export async function callGeminiWithRetry(
 
       const parsed: MenuData = JSON.parse(text);
       return parsed;
-    } catch (error) {
+    } catch (error: unknown) {
       lastError = error instanceof Error ? error : new Error(String(error));
+
+      // 429 (Too Many Requests) の場合はリトライしても無駄なのでループを抜ける
+      if (
+        lastError.message.includes("429") ||
+        lastError.message.includes("Too Many Requests") ||
+        lastError.message.includes("quota") ||
+        lastError.message.includes("RESOURCE_EXHAUSTED")
+      ) {
+        console.warn("[Gemini] Rate limit exceeded. Stopping retries.");
+        throw new Error(
+          "サーバーが混み合っています。約1分ほど待ってから再度お試しください。"
+        );
+      }
+
       console.warn(`[Gemini] Attempt ${attempt + 1}/${maxRetries} failed: ${lastError.message}`);
 
       // 最後のリトライでなければバックオフ
