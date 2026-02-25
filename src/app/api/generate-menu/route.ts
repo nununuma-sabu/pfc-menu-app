@@ -1,7 +1,8 @@
 import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 import type { GenerativeModel, ResponseSchema } from "@google/generative-ai";
 import { NextResponse } from "next/server";
-import { Meal, MenuData, ShoppingListItem, GenerateMenuRequest } from "@/types/menu";
+import { Meal, MenuData, ShoppingListItem } from "@/types/menu";
+import { generateMenuRequestSchema } from "./validation";
 
 // ─────────────────────────────────────────────
 // Gemini API 構造化出力用スキーマ
@@ -237,11 +238,19 @@ export async function POST(request: Request) {
       );
     }
 
+    const rawBody = await request.json();
+    const parseResult = generateMenuRequestSchema.safeParse(rawBody);
+    if (!parseResult.success) {
+      return NextResponse.json(
+        { error: "入力データが不正です。", details: parseResult.error.flatten() },
+        { status: 400 }
+      );
+    }
     const {
       calories, p, f, c, mainIngredient,
-      allergies = "", dislikedFoods = "", avoidFoods = "",
-      mealCount = 3, days = 3, fixedMeals = []
-    }: GenerateMenuRequest = await request.json();
+      allergies, dislikedFoods, avoidFoods,
+      mealCount, days, fixedMeals
+    } = parseResult.data;
 
     // ユーザー入力のサニタイズ
     const safeMainIngredient = sanitizeUserInput(mainIngredient || "");
