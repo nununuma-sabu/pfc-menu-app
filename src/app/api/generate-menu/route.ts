@@ -4,6 +4,8 @@ import { NextResponse } from "next/server";
 import { Meal, MenuData, ShoppingListItem } from "@/types/menu";
 import { z } from "zod";
 import { generateMenuRequestSchema } from "./validation";
+import fs from "fs";
+import path from "path";
 
 // ─────────────────────────────────────────────
 // Gemini API 構造化出力用スキーマ
@@ -162,6 +164,34 @@ const DEFAULT_MAX_RETRIES = 3;
 const BASE_DELAY_MS = 1000;
 
 /**
+ * トークン使用量を日次ログファイルに記録する。
+ * ファイルパス: logs/tokens-YYYY-MM-DD.log
+ * Vercel等でプロジェクトルートに書けない場合は /tmp にフォールバック。
+ */
+function writeTokenLog(input: number, output: number, total: number): void {
+  try {
+    const now = new Date();
+    const dateStr = now.toISOString().slice(0, 10); // YYYY-MM-DD
+    const timeStr = now.toISOString().slice(11, 19); // HH:MM:SS
+
+    const logLine = `${dateStr} ${timeStr} | input: ${input} | output: ${output} | total: ${total}\n`;
+
+    // プロジェクトルートの logs/ を優先、ダメなら /tmp/
+    let logDir = path.resolve(process.cwd(), "logs");
+    try {
+      fs.mkdirSync(logDir, { recursive: true });
+    } catch {
+      logDir = "/tmp";
+    }
+
+    const logFile = path.join(logDir, `tokens-${dateStr}.log`);
+    fs.appendFileSync(logFile, logLine, "utf-8");
+  } catch (err) {
+    console.warn("[Gemini] Failed to write token log:", err);
+  }
+}
+
+/**
  * Gemini API を指数バックオフ付きでリトライする。
  * API呼び出しエラーとJSONパースエラーの両方をキャッチしてリトライ。
  */
@@ -177,6 +207,16 @@ export async function callGeminiWithRetry(
       const result = await model.generateContent(prompt);
       const response = await result.response;
       const text = response.text();
+
+      // トークン使用量をログ出力 + ファイル記録
+      const usage = response.usageMetadata;
+      if (usage) {
+        const input = usage.promptTokenCount ?? 0;
+        const output = usage.candidatesTokenCount ?? 0;
+        const total = usage.totalTokenCount ?? 0;
+        console.log(`[Gemini] Tokens — input: ${input}, output: ${output}, total: ${total}`);
+        writeTokenLog(input, output, total);
+      }
 
       console.log(`[Gemini] Attempt ${attempt + 1}: Response received (${text.length} chars)`);
 
