@@ -14,20 +14,13 @@ export default async function Header() {
                 </Link>
 
                 <div className="flex items-center gap-4 text-sm font-medium">
-                    {user ? (
+                    {user && (
                         <div className="flex items-center gap-4">
                             <span className="text-gray-600 dark:text-gray-300 hidden sm:inline-block">
                                 {user.email}
                             </span>
                             <LogoutButton />
                         </div>
-                    ) : (
-                        <Link
-                            href="/login"
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
-                        >
-                            ログイン
-                        </Link>
                     )}
                 </div>
             </div>
