@@ -27,7 +27,6 @@ export default function LoginPage() {
             setIsLoading(false)
         } else {
             router.push('/')
-            router.push('/')
             router.refresh()
         }
     }
@@ -89,7 +88,6 @@ export default function LoginPage() {
                         disabled={isLoading}
                         className="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-xl transition-colors disabled:opacity-50"
                     >
-                        {isLoading ? 'ログイン中...' : 'ログイン'}
                         {isLoading ? 'ログイン中...' : 'ログイン'}
                     </button>
                 </form>
