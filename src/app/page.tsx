@@ -39,13 +39,12 @@ export default function Home() {
       const result: MenuData = await res.json();
       setMenu(result);
 
-      // 1日あたりの目標栄養価を計算して保存
-      const d = data.days ?? 1;
+      // フォームの calories/p/f/c はすでに1日あたりの値
       setDailyTarget({
-        calories: Math.round(data.calories / d),
-        p: Math.round(data.p / d),
-        f: Math.round(data.f / d),
-        c: Math.round(data.c / d),
+        calories: data.calories,
+        p: data.p,
+        f: data.f,
+        c: data.c,
       });
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "メニューの生成に失敗しました。");
