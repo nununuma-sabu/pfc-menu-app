@@ -20,7 +20,7 @@ export default async function LoginPage(props: { searchParams: Promise<{ message
                     </div>
                 )}
 
-                <form className="flex flex-col gap-4">
+                <form action={login} className="flex flex-col gap-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" htmlFor="email">メールアドレス</label>
                         <input
@@ -43,7 +43,7 @@ export default async function LoginPage(props: { searchParams: Promise<{ message
                     </div>
 
                     <button
-                        formAction={login}
+                        type="submit"
                         className="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-xl transition-colors"
                     >
                         ログイン

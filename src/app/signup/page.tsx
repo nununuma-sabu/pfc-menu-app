@@ -20,7 +20,7 @@ export default async function SignupPage(props: { searchParams: Promise<{ messag
                     </div>
                 )}
 
-                <form className="flex flex-col gap-4">
+                <form action={signup} className="flex flex-col gap-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" htmlFor="email">メールアドレス</label>
                         <input
@@ -43,7 +43,7 @@ export default async function SignupPage(props: { searchParams: Promise<{ messag
                     </div>
 
                     <button
-                        formAction={signup}
+                        type="submit"
                         className="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-xl transition-colors"
                     >
                         新規登録
