@@ -6,6 +6,7 @@ AI PFC Menu Generator の技術的な仕様・設計方針についてまとめ�
 
 | ドキュメント | 内容 |
 |---|---|
+| [setup.md](./setup.md) | 開発環境のセットアップ・技術スタック・デプロイ |
 | [validation.md](./validation.md) | 入力バリデーション設計（フロントエンド／バックエンド） |
 | [security.md](./security.md) | セキュリティ設計（プロンプトインジェクション対策・構造化出力） |
 | [cost-estimation.md](./cost-estimation.md) | Gemini APIコスト試算・トークン実測データ・インフラ料金 |
