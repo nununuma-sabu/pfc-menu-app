@@ -5,9 +5,12 @@ import { Utensils, Moon, Sun, Sunrise, Coffee, ShoppingCart, Calendar } from "lu
 import clsx from "clsx";
 
 import { Meal, MenuData, ShoppingListItem, Nutrition } from "../types/menu";
+import PfcComparisonChart from "./PfcComparisonChart";
 
 interface MenuDisplayProps {
     menu: MenuData | null;
+    /** 1日あたりの目標栄養価（page.tsxから渡される） */
+    dailyTarget?: Nutrition | null;
 }
 
 function MealCard({ meal }: { meal: Meal }) {
@@ -127,7 +130,7 @@ function groupByCategory(list: ShoppingListItem[]) {
     return sorted;
 }
 
-export default function MenuDisplay({ menu }: MenuDisplayProps) {
+export default function MenuDisplay({ menu, dailyTarget }: MenuDisplayProps) {
     const [activeDay, setActiveDay] = useState(0);
 
     if (!menu || !menu.days || menu.days.length === 0) return null;
@@ -168,9 +171,36 @@ export default function MenuDisplay({ menu }: MenuDisplayProps) {
             {/* Day Total */}
             <TotalBar total={currentDay.total} label={isMultiDay ? `${currentDay.dayLabel} 合計栄養価` : "合計栄養価"} />
 
+            {/* 1日ごとの比較チャート */}
+            {dailyTarget && (
+                <PfcComparisonChart
+                    target={dailyTarget}
+                    actual={currentDay.total}
+                    label={isMultiDay ? `${currentDay.dayLabel} 達成度` : "栄養バランス達成度"}
+                />
+            )}
+
             {/* Grand Total (multi-day only) */}
             {isMultiDay && menu.grandTotal && (
-                <TotalBar total={menu.grandTotal} label={`${menu.days.length}日分 総合計`} />
+                <>
+                    <TotalBar total={menu.grandTotal} label={`${menu.days.length}日分 総合計`} />
+                    {/* 全日分の比較チャート（目標 × 日数 vs 提案合計） */}
+                    {dailyTarget && (() => {
+                        const totalTarget: Nutrition = {
+                            calories: dailyTarget.calories * menu.days.length,
+                            p: dailyTarget.p * menu.days.length,
+                            f: dailyTarget.f * menu.days.length,
+                            c: dailyTarget.c * menu.days.length,
+                        };
+                        return (
+                            <PfcComparisonChart
+                                target={totalTarget}
+                                actual={menu.grandTotal}
+                                label={`${menu.days.length}日分 総合計 達成度`}
+                            />
+                        );
+                    })()}
+                </>
             )}
 
             {/* Shopping List */}

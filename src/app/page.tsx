@@ -7,16 +7,19 @@ import NutritionTip from "@/components/NutritionTip";
 import DisclaimerScreen from "@/components/DisclaimerScreen";
 import { Sparkles } from "lucide-react";
 
-import { MenuData, GenerateMenuRequest } from "@/types/menu";
+import { MenuData, GenerateMenuRequest, Nutrition } from "@/types/menu";
 
 export default function Home() {
   const [showDisclaimer, setShowDisclaimer] = useState(true);
   const [menu, setMenu] = useState<MenuData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // 設定値（1日あたり）をPfcComparisonChartに渡すために保持
+  const [dailyTarget, setDailyTarget] = useState<Nutrition | null>(null);
 
   const handleGenerateMenu = async (data: GenerateMenuRequest) => {
     setMenu(null);
+    setDailyTarget(null);
     setLoading(true);
     setError(null);
     try {
@@ -33,8 +36,17 @@ export default function Home() {
         throw new Error(errorData.error || "Failed to generate menu");
       }
 
-      const result = await res.json();
+      const result: MenuData = await res.json();
       setMenu(result);
+
+      // 1日あたりの目標栄養価を計算して保存
+      const d = data.days ?? 1;
+      setDailyTarget({
+        calories: Math.round(data.calories / d),
+        p: Math.round(data.p / d),
+        f: Math.round(data.f / d),
+        c: Math.round(data.c / d),
+      });
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "メニューの生成に失敗しました。");
     } finally {
@@ -72,7 +84,7 @@ export default function Home() {
           </div>
         )}
 
-        <MenuDisplay menu={menu} />
+        <MenuDisplay menu={menu} dailyTarget={dailyTarget} />
       </div>
     </main>
   );
