@@ -6,6 +6,13 @@ import { NextRequest } from "next/server";
 // vi.mock はホイストされるため、ファイル先頭で宣言する
 // ─────────────────────────────────────────────
 
+vi.mock("@/lib/supabase/middleware", () => ({
+    updateSession: vi.fn(async (req) => {
+        const { NextResponse } = await import("next/server");
+        return NextResponse.next({ request: req });
+    }),
+}));
+
 const mockLimit = vi.fn();
 
 vi.mock("@upstash/ratelimit", () => {
@@ -105,7 +112,7 @@ describe("middleware (レートリミット)", () => {
         expect(mockLimit).toHaveBeenCalledWith(targetIp);
     });
 
-    it("config.matcher が /api/generate-menu を含む", () => {
-        expect(config.matcher).toContain("/api/generate-menu");
+    it("config.matcher に静的ファイル除外の正規表現が含まれる", () => {
+        expect(config.matcher[0]).toContain("!_next/static");
     });
 });
