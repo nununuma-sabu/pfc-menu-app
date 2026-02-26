@@ -231,6 +231,10 @@ export default function MenuDisplay({ menu, dailyTarget }: MenuDisplayProps) {
                     ))}
                 </div>
             )}
+            {/* 注意書き */}
+            <p className="text-xs text-zinc-400 text-center pt-2">
+                ※ AIの提案したレシピには栄養価の誤差が生じる可能性があります。ご承知おきください。
+            </p>
         </div>
     );
 }
