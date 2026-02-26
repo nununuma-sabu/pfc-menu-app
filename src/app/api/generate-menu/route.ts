@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 import { Meal, MenuData, ShoppingListItem } from "@/types/menu";
 import { z } from "zod";
 import { generateMenuRequestSchema } from "./validation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 
 // ─────────────────────────────────────────────
 // Gemini API 構造化出力用スキーマ
@@ -168,7 +168,11 @@ const BASE_DELAY_MS = 1000;
  */
 async function writeTokenLog(input: number, output: number, total: number): Promise<void> {
   try {
-    const supabase = await createClient();
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!supabaseUrl || !supabaseKey) return;
+
+    const supabase = createSupabaseClient(supabaseUrl, supabaseKey);
     const { error } = await supabase.from("token_logs").insert({
       input_tokens: input,
       output_tokens: output,
