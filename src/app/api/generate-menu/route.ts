@@ -4,8 +4,7 @@ import { NextResponse } from "next/server";
 import { Meal, MenuData, ShoppingListItem } from "@/types/menu";
 import { z } from "zod";
 import { generateMenuRequestSchema } from "./validation";
-import fs from "fs";
-import path from "path";
+import { createClient } from "@/lib/supabase/server";
 
 // ─────────────────────────────────────────────
 // Gemini API 構造化出力用スキーマ
@@ -164,28 +163,20 @@ const DEFAULT_MAX_RETRIES = 3;
 const BASE_DELAY_MS = 1000;
 
 /**
- * トークン使用量を日次ログファイルに記録する。
- * ファイルパス: logs/tokens-YYYY-MM-DD.log
- * Vercel等でプロジェクトルートに書けない場合は /tmp にフォールバック。
+ * トークン使用量を Supabase の token_logs テーブルに記録する。
+ * エラー時はコンソールに警告を出すのみで、APIレスポンスはブロックしない。
  */
-function writeTokenLog(input: number, output: number, total: number): void {
+async function writeTokenLog(input: number, output: number, total: number): Promise<void> {
   try {
-    const now = new Date();
-    const dateStr = now.toISOString().slice(0, 10); // YYYY-MM-DD
-    const timeStr = now.toISOString().slice(11, 19); // HH:MM:SS
-
-    const logLine = `${dateStr} ${timeStr} | input: ${input} | output: ${output} | total: ${total}\n`;
-
-    // プロジェクトルートの logs/ を優先、ダメなら /tmp/
-    let logDir = path.resolve(process.cwd(), "logs");
-    try {
-      fs.mkdirSync(logDir, { recursive: true });
-    } catch {
-      logDir = "/tmp";
+    const supabase = await createClient();
+    const { error } = await supabase.from("token_logs").insert({
+      input_tokens: input,
+      output_tokens: output,
+      total_tokens: total,
+    });
+    if (error) {
+      console.warn("[Gemini] Failed to write token log to Supabase:", error.message);
     }
-
-    const logFile = path.join(logDir, `tokens-${dateStr}.log`);
-    fs.appendFileSync(logFile, logLine, "utf-8");
   } catch (err) {
     console.warn("[Gemini] Failed to write token log:", err);
   }
@@ -215,7 +206,7 @@ export async function callGeminiWithRetry(
         const output = usage.candidatesTokenCount ?? 0;
         const total = usage.totalTokenCount ?? 0;
         console.log(`[Gemini] Tokens — input: ${input}, output: ${output}, total: ${total}`);
-        writeTokenLog(input, output, total);
+        writeTokenLog(input, output, total).catch(() => { });
       }
 
       console.log(`[Gemini] Attempt ${attempt + 1}: Response received (${text.length} chars)`);
@@ -470,10 +461,10 @@ ${safeMainIngredient ? `メイン食材の希望: ${safeMainIngredient}` : ""}
 (誤差±10%以内)
 
 ※ meals配列には、AIが提案する ${aiGeneratedMealCount}食分のみを含めてください。
-${mealCount <= 3 
-  ? `※ timeLabel は「朝食」「昼食」「夕食」の中から、1日${mealCount}食分として適切なものを選択してください。間食は含めないでください。`
-  : `※ timeLabel は「朝食」「昼食」「夕食」を各1回含め、残りを「間食（または補食）」として適切に割り振ってください。`
-}
+${mealCount <= 3
+        ? `※ timeLabel は「朝食」「昼食」「夕食」の中から、1日${mealCount}食分として適切なものを選択してください。間食は含めないでください。`
+        : `※ timeLabel は「朝食」「昼食」「夕食」を各1回含め、残りを「間食（または補食）」として適切に割り振ってください。`
+      }
 ※ shoppingList にはAIが提案した分のみを含めてください（固定メニュー分はこちらで合算します）。`;
 
     // リトライ付きでGemini API呼び出し
