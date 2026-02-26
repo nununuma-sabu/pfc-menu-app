@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { sanitizeUserInput } from "@/app/api/generate-menu/route";
+import { sanitizeUserInput } from "@/services/geminiService";
 
 describe("sanitizeUserInput", () => {
     // 正常入力

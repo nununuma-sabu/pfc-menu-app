@@ -3,7 +3,7 @@ import {
     normalizeItemName,
     parseAmount,
     mergeShoppingList,
-} from "@/app/api/generate-menu/route";
+} from "@/services/geminiService";
 import type { ShoppingListItem } from "@/types/menu";
 
 // ─── normalizeItemName ───

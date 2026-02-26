@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { callGeminiWithRetry } from "@/app/api/generate-menu/route";
+import { callGeminiWithRetry } from "@/services/geminiService";
 import type { GenerativeModel } from "@google/generative-ai";
 import type { MenuData } from "@/types/menu";
 
