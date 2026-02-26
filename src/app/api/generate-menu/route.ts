@@ -470,7 +470,10 @@ ${safeMainIngredient ? `メイン食材の希望: ${safeMainIngredient}` : ""}
 (誤差±10%以内)
 
 ※ meals配列には、AIが提案する ${aiGeneratedMealCount}食分のみを含めてください。
-※ timeLabel は「朝食」「昼食」「夕食」だけでなく「間食」など適切に割り振ってください。
+${mealCount <= 3 
+  ? `※ timeLabel は「朝食」「昼食」「夕食」の中から、1日${mealCount}食分として適切なものを選択してください。間食は含めないでください。`
+  : `※ timeLabel は「朝食」「昼食」「夕食」を各1回含め、残りを「間食（または補食）」として適切に割り振ってください。`
+}
 ※ shoppingList にはAIが提案した分のみを含めてください（固定メニュー分はこちらで合算します）。`;
 
     // リトライ付きでGemini API呼び出し
