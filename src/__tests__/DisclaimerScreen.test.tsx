@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, act } from "@testing-library/react";
 import DisclaimerScreen from "@/components/DisclaimerScreen";
 
 vi.useFakeTimers();
@@ -39,8 +39,9 @@ describe("DisclaimerScreen コンポーネント", () => {
         const onComplete = vi.fn();
         render(<DisclaimerScreen onComplete={onComplete} />);
 
-        // 6200ms後にonCompleteが呼ばれるはず
-        vi.advanceTimersByTime(6200);
+        act(() => {
+            vi.advanceTimersByTime(6200);
+        });
 
         expect(onComplete).toHaveBeenCalled();
     });
