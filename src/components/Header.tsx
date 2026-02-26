@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { signout } from '@/app/login/actions'
+import LogoutButton from './LogoutButton'
 
 export default async function Header() {
     const supabase = await createClient()
@@ -19,11 +19,7 @@ export default async function Header() {
                             <span className="text-gray-600 dark:text-gray-300 hidden sm:inline-block">
                                 {user.email}
                             </span>
-                            <form action={signout}>
-                                <button className="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-100 transition-colors">
-                                    ログアウト
-                                </button>
-                            </form>
+                            <LogoutButton />
                         </div>
                     ) : (
                         <Link
