@@ -36,3 +36,5 @@ jobs:
         run: npm run build
         env:
           GEMINI_API_KEY: dummy_key_for_ci_build
+          UPSTASH_REDIS_REST_URL: https://dummy.upstash.io
+          UPSTASH_REDIS_REST_TOKEN: dummy_token_for_ci_build
