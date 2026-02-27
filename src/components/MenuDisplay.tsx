@@ -168,7 +168,7 @@ export default function MenuDisplay({ menu, dailyTarget }: MenuDisplayProps) {
             )}
 
             {/* Meals for selected day */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
                 {currentDay.meals && currentDay.meals.map((meal, index) => (
                     <MealCard key={`${activeDay}-${index}`} meal={meal} />
                 ))}
