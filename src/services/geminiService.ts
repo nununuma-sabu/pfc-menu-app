@@ -215,7 +215,10 @@ export async function callGeminiWithRetry(
                 const output = usage.candidatesTokenCount ?? 0;
                 const total = usage.totalTokenCount ?? 0;
                 console.log(`[Gemini] Tokens — input: ${input}, output: ${output}, total: ${total}`);
-                writeTokenLog(input, output, total, userId).catch(() => { });
+                // 必ずawaitし、エラー時はcatchすることで後続処理(献立の返却)をブロックしない
+                await writeTokenLog(input, output, total, userId).catch((err) => {
+                    console.warn("[Gemini] Non-fatal error in writeTokenLog:", err);
+                });
             }
 
             console.log(`[Gemini] Attempt ${attempt + 1}: Response received (${text.length} chars)`);
