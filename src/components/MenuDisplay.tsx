@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Utensils, Moon, Sun, Sunrise, Coffee, ShoppingCart, Calendar } from "lucide-react";
+import { Utensils, Moon, Sun, Sunrise, Coffee, ShoppingCart, Calendar, ChevronDown } from "lucide-react";
 import clsx from "clsx";
 
 import { Meal, MenuData, ShoppingListItem, Nutrition } from "../types/menu";
@@ -60,34 +60,22 @@ function MealCard({ meal }: { meal: Meal }) {
                     {(meal.ingredients || meal.steps) && (
                         <div className="pt-2 space-y-2 border-t border-zinc-50">
                             {meal.ingredients && meal.ingredients.length > 0 && (
-                                <details className="group">
-                                    <summary className="flex items-center justify-between cursor-pointer list-none text-sm font-bold text-zinc-700 hover:text-indigo-600 transition-colors bg-zinc-50 p-2 rounded-md">
-                                        <span className="flex items-center gap-1"><Utensils className="w-4 h-4" /> 材料</span>
-                                        <span className="transition group-open:rotate-180">
-                                            <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
-                                        </span>
-                                    </summary>
-                                    <ul className="list-disc list-inside text-zinc-600 pl-3 pt-2 space-y-1 text-xs">
+                                <AnimatedAccordion title={<span className="flex items-center gap-1"><Utensils className="w-4 h-4" /> 材料</span>}>
+                                    <ul className="list-disc list-inside text-zinc-600 pl-3 pt-2 pb-2 space-y-1 text-xs">
                                         {meal.ingredients.map((ing, i) => (
                                             <li key={i}>{ing.name} <span className="text-zinc-400">({ing.amount})</span></li>
                                         ))}
                                     </ul>
-                                </details>
+                                </AnimatedAccordion>
                             )}
                             {meal.steps && meal.steps.length > 0 && (
-                                <details className="group">
-                                    <summary className="flex items-center justify-between cursor-pointer list-none text-sm font-bold text-zinc-700 hover:text-indigo-600 transition-colors bg-zinc-50 p-2 rounded-md">
-                                        <span>調理手順</span>
-                                        <span className="transition group-open:rotate-180">
-                                            <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
-                                        </span>
-                                    </summary>
-                                    <ol className="list-decimal list-inside text-zinc-600 pl-3 pt-2 space-y-1.5 text-xs">
+                                <AnimatedAccordion title={<span>調理手順</span>}>
+                                    <ol className="list-decimal list-inside text-zinc-600 pl-3 pt-2 pb-2 space-y-1.5 text-xs">
                                         {meal.steps.map((step, i) => (
                                             <li key={i}>{step}</li>
                                         ))}
                                     </ol>
-                                </details>
+                                </AnimatedAccordion>
                             )}
                         </div>
                     )}
@@ -107,6 +95,34 @@ function MealCard({ meal }: { meal: Meal }) {
                 <div><span className="text-zinc-500 mr-1">P:</span><span className="font-bold">{total.p}g</span></div>
                 <div><span className="text-zinc-500 mr-1">F:</span><span className="font-bold">{total.f}g</span></div>
                 <div><span className="text-zinc-500 mr-1">C:</span><span className="font-bold">{total.c}g</span></div>
+            </div>
+        </div>
+    );
+}
+
+function AnimatedAccordion({ title, children }: { title: React.ReactNode; children: React.ReactNode }) {
+    const [isOpen, setIsOpen] = useState(false);
+
+    return (
+        <div className="overflow-hidden">
+            <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="w-full flex items-center justify-between cursor-pointer text-sm font-bold text-zinc-700 hover:text-indigo-600 transition-colors bg-zinc-50 p-2 rounded-md"
+            >
+                {title}
+                <span className={clsx("transition-transform duration-300", isOpen ? "rotate-180" : "rotate-0")}>
+                    <ChevronDown className="w-4 h-4" />
+                </span>
+            </button>
+            <div
+                className={clsx(
+                    "grid transition-all duration-300 ease-in-out",
+                    isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+                )}
+            >
+                <div className="overflow-hidden">
+                    {children}
+                </div>
             </div>
         </div>
     );
