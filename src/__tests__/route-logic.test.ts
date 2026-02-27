@@ -1,10 +1,58 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterAll } from "vitest";
 import {
     normalizeItemName,
     parseAmount,
     mergeShoppingList,
 } from "@/services/geminiService";
 import type { ShoppingListItem } from "@/types/menu";
+import { POST } from "@/app/api/generate-menu/route";
+
+const mockLimit = vi.fn();
+
+// --- モック設定 ---
+
+vi.mock("@upstash/ratelimit", () => {
+    function MockRatelimit() {
+        return { limit: mockLimit };
+    }
+    MockRatelimit.slidingWindow = vi.fn().mockReturnValue("sliding-window-limiter");
+    return { Ratelimit: MockRatelimit };
+});
+
+vi.mock("@upstash/redis", () => ({
+    Redis: {
+        fromEnv: vi.fn().mockReturnValue({}),
+    },
+}));
+
+vi.mock("@/services/geminiService", async (importOriginal) => {
+    const actual = await importOriginal<typeof import("@/services/geminiService")>();
+    return {
+        ...actual,
+        generateMenu: vi.fn().mockResolvedValue({
+            menus: [],
+            shoppingList: [],
+            totals: { calories: 0, protein: 0, fat: 0, carbs: 0 }
+        }),
+    };
+});
+
+const mockGetUser = vi.fn();
+vi.mock("@/lib/supabase/server", () => ({
+    createClient: vi.fn().mockResolvedValue({
+        auth: {
+            getUser: () => mockGetUser(),
+        },
+    }),
+}));
+
+const mockData = {
+    calories: 2000,
+    p: 150,
+    f: 50,
+    c: 200,
+    mealCount: 3,
+};
 
 // ─── normalizeItemName ───
 
@@ -194,5 +242,88 @@ describe("mergeShoppingList", () => {
 
         const result = mergeShoppingList(existing, []);
         expect(result).toEqual(existing);
+    });
+});
+
+// ─── API Route POST (Rate Limiting) ───
+
+describe("POST /api/generate-menu", () => {
+    const ORIGINAL_URL = process.env.UPSTASH_REDIS_REST_URL;
+    const ORIGINAL_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+        process.env.UPSTASH_REDIS_REST_URL = "https://test.upstash.io";
+        process.env.UPSTASH_REDIS_REST_TOKEN = "test-token";
+    });
+
+    afterAll(() => {
+        process.env.UPSTASH_REDIS_REST_URL = ORIGINAL_URL;
+        process.env.UPSTASH_REDIS_REST_TOKEN = ORIGINAL_TOKEN;
+    });
+
+    function createRequest(body: any = mockData) {
+        return new Request("http://localhost/api/generate-menu", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(body),
+        });
+    }
+
+    it("レートリミット超過時は429ステータスとRetry-Afterヘッダーを返す", async () => {
+        // 認証成功のモック
+        mockGetUser.mockResolvedValue({ data: { user: { id: "test-user-id" } } });
+        // レートリミット超過のモック
+        mockLimit.mockResolvedValue({
+            success: false,
+            limit: 30,
+            remaining: 0,
+            reset: Date.now() + 60000,
+        });
+
+        const req = createRequest();
+        const res = await POST(req);
+
+        expect(res.status).toBe(429);
+        const json = await res.json();
+        expect(json.error).toMatch(/リクエストが多すぎます/);
+
+        const retryAfter = Number(res.headers.get("Retry-After"));
+        expect(retryAfter).toBeGreaterThan(0);
+        expect(retryAfter).toBeLessThanOrEqual(60);
+    });
+
+    it("レートリミット内で認証済みの場合は200ステータスで通過する", async () => {
+        // 認証成功のモック
+        mockGetUser.mockResolvedValue({ data: { user: { id: "test-user-id" } } });
+        // レートリミット通過のモック
+        mockLimit.mockResolvedValue({
+            success: true,
+            limit: 30,
+            remaining: 29,
+            reset: Date.now() + 60000,
+        });
+
+        const req = createRequest();
+        const res = await POST(req);
+
+        expect(res.status).toBe(200);
+        expect(mockLimit).toHaveBeenCalledWith("test-user-id");
+    });
+
+    it("未認証の場合は401ステータスを返す", async () => {
+        // 未認証のモック
+        mockGetUser.mockResolvedValue({ data: { user: null } });
+
+        const req = createRequest();
+        const res = await POST(req);
+
+        expect(res.status).toBe(401);
+        const json = await res.json();
+        expect(json.error).toBe("認証されていません。");
+        // レートリミットは呼ばれないはず
+        expect(mockLimit).not.toHaveBeenCalled();
     });
 });
