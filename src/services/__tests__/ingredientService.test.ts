@@ -29,7 +29,8 @@ describe('ingredientService', () => {
             error: null,
         });
 
-        (createClient as any).mockResolvedValue({
+        import type { Mock } from 'vitest';
+        (createClient as Mock).mockResolvedValue({
             rpc: mockRpc,
         });
 
@@ -51,7 +52,8 @@ describe('ingredientService', () => {
             error: { message: 'DB Error' },
         });
 
-        (createClient as any).mockResolvedValue({
+        import type { Mock } from 'vitest';
+        (createClient as Mock).mockResolvedValue({
             rpc: mockRpc,
         });
 
