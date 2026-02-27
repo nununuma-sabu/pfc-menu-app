@@ -160,6 +160,8 @@ export function sanitizeUserInput(input: string): string {
 // リトライ機構
 // ─────────────────────────────────────────────
 
+import { createClient } from "@/lib/supabase/server";
+
 const DEFAULT_MAX_RETRIES = 3;
 const BASE_DELAY_MS = 1000;
 
@@ -167,20 +169,21 @@ const BASE_DELAY_MS = 1000;
  * トークン使用量を Supabase の token_logs テーブルに記録する。
  * エラー時はコンソールに警告を出すのみで、APIレスポンスはブロックしない。
  */
-async function writeTokenLog(input: number, output: number, total: number): Promise<void> {
+async function writeTokenLog(input: number, output: number, total: number, userId: string): Promise<void> {
     try {
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-        const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-        if (!supabaseUrl || !supabaseKey) return;
+        // サーバー用のSupabaseクライアント（クッキー/認証情報付き）を作成
+        const supabase = await createClient();
 
-        const supabase = createSupabaseClient(supabaseUrl, supabaseKey);
+        // insertを実行。
         const { error } = await supabase.from("token_logs").insert({
             input_tokens: input,
             output_tokens: output,
             total_tokens: total,
+            user_id: userId,
         });
+
         if (error) {
-            console.warn("[Gemini] Failed to write token log to Supabase:", error.message);
+            console.warn("[Gemini] Failed to write token log to Supabase:", error.message, error.details);
         }
     } catch (err) {
         console.warn("[Gemini] Failed to write token log:", err);
@@ -194,6 +197,7 @@ async function writeTokenLog(input: number, output: number, total: number): Prom
 export async function callGeminiWithRetry(
     model: GenerativeModel,
     prompt: string,
+    userId: string,
     maxRetries: number = DEFAULT_MAX_RETRIES
 ): Promise<MenuData> {
     let lastError: Error | null = null;
@@ -211,7 +215,7 @@ export async function callGeminiWithRetry(
                 const output = usage.candidatesTokenCount ?? 0;
                 const total = usage.totalTokenCount ?? 0;
                 console.log(`[Gemini] Tokens — input: ${input}, output: ${output}, total: ${total}`);
-                writeTokenLog(input, output, total).catch(() => { });
+                writeTokenLog(input, output, total, userId).catch(() => { });
             }
 
             console.log(`[Gemini] Attempt ${attempt + 1}: Response received (${text.length} chars)`);
@@ -366,7 +370,7 @@ export function mergeShoppingList(
 // 献立生成のメインロジック
 // ─────────────────────────────────────────────
 
-export async function generateMenu(params: GenerateMenuParams): Promise<MenuData> {
+export async function generateMenu(params: GenerateMenuParams, userId: string): Promise<MenuData> {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
         throw new Error("Gemini API キーが設定されていません。.env.localを確認してください。");
@@ -455,7 +459,7 @@ ${mealCount <= 3
 ※ shoppingList にはAIが提案した分のみを含めてください（固定メニュー分はこちらで合算します）。`;
 
     // リトライ付きでGemini API呼び出し
-    const menuData = await callGeminiWithRetry(model, prompt);
+    const menuData = await callGeminiWithRetry(model, prompt, userId);
 
     // 固定メニューの挿入と買い物リストの合算
     if (fixedMeals.length > 0) {

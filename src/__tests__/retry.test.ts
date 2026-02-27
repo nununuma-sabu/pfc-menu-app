@@ -60,7 +60,7 @@ describe("callGeminiWithRetry", () => {
     it("1回目で成功するケース", async () => {
         const model = createMockModel([{ success: true, data: mockMenuData }]);
 
-        const result = await callGeminiWithRetry(model, "test prompt", 3);
+        const result = await callGeminiWithRetry(model, "test prompt", "test-user-id", 3);
 
         expect(result).toEqual(mockMenuData);
         expect(model.generateContent).toHaveBeenCalledTimes(1);
@@ -76,7 +76,7 @@ describe("callGeminiWithRetry", () => {
         // リアルタイマーを使用してリトライの動作を検証
         vi.useRealTimers();
 
-        const result = await callGeminiWithRetry(model, "test prompt", 3);
+        const result = await callGeminiWithRetry(model, "test prompt", "test-user-id", 3);
 
         expect(result).toEqual(mockMenuData);
         expect(model.generateContent).toHaveBeenCalledTimes(2);
@@ -91,7 +91,7 @@ describe("callGeminiWithRetry", () => {
 
         vi.useRealTimers();
 
-        await expect(callGeminiWithRetry(model, "test prompt", 3)).rejects.toThrow("Error 3");
+        await expect(callGeminiWithRetry(model, "test prompt", "test-user-id", 3)).rejects.toThrow("Error 3");
         expect(model.generateContent).toHaveBeenCalledTimes(3);
     });
 
@@ -119,7 +119,7 @@ describe("callGeminiWithRetry", () => {
 
         vi.useRealTimers();
 
-        const result = await callGeminiWithRetry(model, "test prompt", 3);
+        const result = await callGeminiWithRetry(model, "test prompt", "test-user-id", 3);
 
         expect(result).toEqual(mockMenuData);
         expect(model.generateContent).toHaveBeenCalledTimes(2);
@@ -132,7 +132,7 @@ describe("callGeminiWithRetry", () => {
 
         vi.useRealTimers();
 
-        await expect(callGeminiWithRetry(model, "test prompt", 1)).rejects.toThrow("Fail");
+        await expect(callGeminiWithRetry(model, "test prompt", "test-user-id", 1)).rejects.toThrow("Fail");
         expect(model.generateContent).toHaveBeenCalledTimes(1);
     });
 });

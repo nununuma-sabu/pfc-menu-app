@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     }
 
     // ドメインロジック（geminiService.ts）へ委譲
-    const menuData = await generateMenu(parseResult.data);
+    const menuData = await generateMenu(parseResult.data, user.id);
 
     return NextResponse.json(menuData);
   } catch (error: unknown) {
