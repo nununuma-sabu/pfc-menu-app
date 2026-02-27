@@ -65,7 +65,7 @@ function MealCard({ meal }: { meal: Meal }) {
                                 </h5>
                                 <ul className="list-disc list-inside text-zinc-600  pl-1 space-y-0.5 text-xs">
                                     {meal.ingredients.map((ing, i) => (
-                                        <li key={i}>{ing.name} <span className="text-zinc-400">({ing.amount})</span></li>
+                                        <li key={i}>{ing.name} <span className="text-zinc-400">({ing.amount_g}g)</span></li>
                                     ))}
                                 </ul>
                             </div>
@@ -109,14 +109,14 @@ function TotalBar({ total, label }: { total: Nutrition; label: string }) {
 const CATEGORY_ORDER = ["肉魚", "野菜", "乳製品卵", "主食", "乾物調味料", "その他"];
 
 function groupByCategory(list: ShoppingListItem[]) {
-    const groups: Record<string, { name: string; amount: string }[]> = {};
+    const groups: Record<string, { name: string; amount_g: number }[]> = {};
     for (const item of list) {
         const cat = item.category || "その他";
         if (!groups[cat]) groups[cat] = [];
-        groups[cat].push({ name: item.name, amount: item.amount });
+        groups[cat].push({ name: item.name, amount_g: item.amount_g });
     }
     // Sort by predefined order
-    const sorted: [string, { name: string; amount: string }[]][] = [];
+    const sorted: [string, { name: string; amount_g: number }[]][] = [];
     for (const cat of CATEGORY_ORDER) {
         if (groups[cat]) {
             sorted.push([cat, groups[cat]]);
@@ -222,7 +222,7 @@ export default function MenuDisplay({ menu, dailyTarget }: MenuDisplayProps) {
                                     <div key={index} className="flex items-center gap-2 p-2 rounded-lg hover:bg-zinc-50  transition-colors">
                                         <input type="checkbox" className="w-4 h-4 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500" />
                                         <span className="text-sm text-zinc-700 ">
-                                            {item.name} <span className="text-zinc-400 text-xs">({item.amount})</span>
+                                            {item.name} <span className="text-zinc-400 text-xs">({item.amount_g}g)</span>
                                         </span>
                                     </div>
                                 ))}
