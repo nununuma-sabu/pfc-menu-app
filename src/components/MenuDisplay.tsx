@@ -31,7 +31,7 @@ function MealCard({ meal }: { meal: Meal }) {
                 <h3 className="font-bold text-lg">{meal.timeLabel}</h3>
             </div>
             <div className="p-4 space-y-4 flex-1 flex flex-col">
-                <div>
+                <div className="min-h-[100px]">
                     <h4 className="font-bold text-xl text-zinc-900  mb-2">{meal.name}</h4>
                     <p className="text-sm text-zinc-600  leading-relaxed">{meal.description}</p>
                 </div>
@@ -57,7 +57,7 @@ function MealCard({ meal }: { meal: Meal }) {
 
                 {/* Recipe Details */}
                 {(meal.ingredients || meal.steps) && (
-                    <div className="mt-auto pt-2 space-y-3">
+                    <div className="pt-2 space-y-3 border-t border-zinc-50">
                         {meal.ingredients && meal.ingredients.length > 0 && (
                             <div className="text-sm">
                                 <h5 className="font-bold text-zinc-700  mb-1 flex items-center gap-1">
