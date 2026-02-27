@@ -167,6 +167,34 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
         setter(val);
     };
 
+    const handlePFChange = (
+        e: React.ChangeEvent<HTMLInputElement>,
+        setter: (value: string) => void,
+        otherRatio: string
+    ) => {
+        let val = e.target.value;
+        if (val.length > 1) {
+            val = val.replace(/^0+(?=\d)/, ""); // 既存のサニタイズ
+        }
+
+        if (val !== e.target.value) {
+            e.target.value = val;
+        }
+
+        // 1. まず入力されたP(またはF)の値を更新する
+        setter(val);
+
+        // 2. C(炭水化物)を自動で計算して埋める
+        const currentVal = parseInt(val) || 0;
+        const otherVal = parseInt(otherRatio) || 0;
+        const remainder = 100 - currentVal - otherVal;
+
+        // 残りが0以上の時だけCを自動更新（マイナスは防ぐ）
+        if (remainder >= 0) {
+            setCRatio(remainder.toString());
+        }
+    };
+
     return (
         <>
             <form onSubmit={handleSubmit} className="w-full max-w-md space-y-6 p-6 bg-white  rounded-xl shadow-lg border border-zinc-100 ">
@@ -430,7 +458,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                                 max="100"
                                 value={pRatio}
                                 onKeyDown={handleIntegerKeyDown}
-                                onChange={(e) => handleSanitizedChange(e, setPRatio)}
+                                onChange={(e) => handlePFChange(e, setPRatio, fRatio)}
                                 className="w-full p-2 border border-zinc-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 text-center font-bold text-sm"
                                 required
                             />
@@ -448,7 +476,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                                 max="100"
                                 value={fRatio}
                                 onKeyDown={handleIntegerKeyDown}
-                                onChange={(e) => handleSanitizedChange(e, setFRatio)}
+                                onChange={(e) => handlePFChange(e, setFRatio, pRatio)}
                                 className="w-full p-2 border border-zinc-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 text-center font-bold text-sm"
                                 required
                             />
