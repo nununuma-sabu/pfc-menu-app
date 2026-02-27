@@ -503,6 +503,9 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                             </div>
                         </div>
                     </div>
+                    <p className="text-xs text-zinc-500 mt-2 text-center pb-2">
+                        ※PまたはFを入力すると、C（炭水化物）は自動で計算されます。
+                    </p>
 
                     {/* Validation Feedback */}
                     <div className={clsx(
