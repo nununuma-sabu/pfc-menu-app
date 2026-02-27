@@ -2,9 +2,19 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { generateMenuRequestSchema } from "./validation";
 import { generateMenu } from "@/services/geminiService";
+import { createClient } from "@/lib/supabase/server";
 
 export async function POST(request: Request) {
   try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "認証されていません。" }, { status: 401 });
+    }
+
     const rawBody = await request.json();
     const parseResult = generateMenuRequestSchema.safeParse(rawBody);
 
