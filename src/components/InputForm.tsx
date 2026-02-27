@@ -289,21 +289,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                 </div>
 
                 <div className="space-y-6 pt-2">
-                    {/* Calories */}
-                    <div>
-                        <label className="block text-sm font-medium text-zinc-700  mb-1">
-                            目標カロリー (kcal)
-                        </label>
-                        <input
-                            type="number"
-                            min="0"
-                            value={calories}
-                            onKeyDown={handleIntegerKeyDown}
-                            onChange={(e) => handleSanitizedChange(e, setCalories)}
-                            className="w-full p-2 border border-zinc-300  rounded-md bg-white  focus:ring-2 focus:ring-blue-500"
-                            required
-                        />
-                    </div>
+
 
                     {/* Main Ingredient */}
                     <div>
