@@ -23,14 +23,14 @@ describe("MenuDisplay コンポーネント", () => {
                             f: 15,
                             c: 50,
                             description: "バランスの良い朝食",
-                            ingredients: [{ name: "鮭", amount: "1切れ" }],
+                            ingredients: [{ name: "鮭", amount_g: 100 }],
                             steps: ["鮭を焼く"],
                         },
                     ],
                     total: { calories: 450, p: 30, f: 15, c: 50 },
                 },
             ],
-            shoppingList: [{ name: "鮭", amount: "1切れ", category: "肉魚" }],
+            shoppingList: [{ name: "鮭", amount_g: 100, category: "肉魚" }],
             grandTotal: { calories: 450, p: 30, f: 15, c: 50 },
         };
 
@@ -107,8 +107,8 @@ describe("MenuDisplay コンポーネント", () => {
                 },
             ],
             shoppingList: [
-                { name: "鶏むね肉", amount: "300g", category: "肉魚" },
-                { name: "レタス", amount: "1玉", category: "野菜" },
+                { name: "鶏むね肉", amount_g: 300, category: "肉魚" },
+                { name: "レタス", amount_g: 100, category: "野菜" },
             ],
             grandTotal: { calories: 500, p: 25, f: 20, c: 60 },
         };

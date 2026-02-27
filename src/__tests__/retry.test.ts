@@ -17,14 +17,14 @@ const mockMenuData: MenuData = {
                     f: 15,
                     c: 50,
                     description: "バランスの良い朝食",
-                    ingredients: [{ name: "鮭", amount: "1切れ" }],
+                    ingredients: [{ name: "鮭", amount_g: 100 }],
                     steps: ["鮭を焼く"],
                 },
             ],
             total: { calories: 450, p: 30, f: 15, c: 50 },
         },
     ],
-    shoppingList: [{ name: "鮭", amount: "1切れ", category: "肉魚" }],
+    shoppingList: [{ name: "鮭", amount_g: 100, category: "肉魚" }],
     grandTotal: { calories: 450, p: 30, f: 15, c: 50 },
 };
 

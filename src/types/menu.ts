@@ -1,6 +1,6 @@
 export interface Ingredient {
     name: string;
-    amount: string;
+    amount_g: number;
 }
 
 export interface Meal {
@@ -30,7 +30,7 @@ export interface DayMenu {
 
 export interface ShoppingListItem {
     name: string;
-    amount: string;
+    amount_g: number;
     category?: string;
 }
 
