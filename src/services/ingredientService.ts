@@ -57,8 +57,9 @@ export async function getIngredientEmbedding(ingredientName: string): Promise<nu
   try {
     const result = await model.embedContent(ingredientName);
     return result.embedding.values;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Failed to generate embedding for:", ingredientName, error);
-    throw new Error(`Embedding生成に失敗しました: ${error.message || "Unknown error"}`);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    throw new Error(`Embedding生成に失敗しました: ${errorMessage}`);
   }
 }
