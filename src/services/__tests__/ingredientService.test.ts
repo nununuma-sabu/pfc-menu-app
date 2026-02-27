@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { Mock } from 'vitest';
 import { searchIngredientsByVector } from '../ingredientService';
 import { createClient } from '@/lib/supabase/server';
 
@@ -29,7 +30,6 @@ describe('ingredientService', () => {
             error: null,
         });
 
-        import type { Mock } from 'vitest';
         (createClient as Mock).mockResolvedValue({
             rpc: mockRpc,
         });
@@ -52,7 +52,6 @@ describe('ingredientService', () => {
             error: { message: 'DB Error' },
         });
 
-        import type { Mock } from 'vitest';
         (createClient as Mock).mockResolvedValue({
             rpc: mockRpc,
         });
