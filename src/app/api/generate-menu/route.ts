@@ -99,7 +99,7 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json(
-      { error: "メニューの生成に失敗しました。", details: errorMessage },
+      { error: "メニューの生成に失敗しました。", details: errorMessage, stack: error instanceof Error ? error.stack : undefined },
       { status: 500 }
     );
   }
