@@ -1,10 +1,10 @@
 # 開発TODO
 
 ## 最優先事項：ハルシネーション解決の実装
-- [ ] 食品成分マスタDBの設計・構築（Supabase `ingredients_master` テーブル等）
-- [ ] Geminiプロンプトおよび出力スキーマの改修（分量をグラム数値に固定）
+- [x] 食品成分マスタDBの設計・構築方針策定（`doc/master_schema_design.md` や `src/types/master.ts`）
+- [ ] Supabaseへの移行と実際のデータ登録
+- [ ] Geminiプロンプトおよび出力スキーマの改修（マスタデータを活用した献立生成）
 - [ ] 食材名の名寄せ（ベクトル検索など）アルゴリズムの実装
-  - ※ 詳細なプランは `implementation_plan.md` を参照。
 
 ## バックエンド・インフラ
 - [ ] 本番デプロイ前にSupabase環境変数のモックフォールバック（`https://mock.supabase.co` など）を外す、または本番環境でのみエラーとするようにする。
