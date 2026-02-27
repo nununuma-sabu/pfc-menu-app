@@ -262,7 +262,7 @@ describe("POST /api/generate-menu", () => {
         process.env.UPSTASH_REDIS_REST_TOKEN = ORIGINAL_TOKEN;
     });
 
-    function createRequest(body: any = mockData) {
+    function createRequest(body: Record<string, unknown> = mockData) {
         return new Request("http://localhost/api/generate-menu", {
             method: "POST",
             headers: {

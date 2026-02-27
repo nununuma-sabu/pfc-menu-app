@@ -1,7 +1,6 @@
 import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 import type { GenerativeModel, ResponseSchema } from "@google/generative-ai";
 import { Meal, MenuData, ShoppingListItem } from "@/types/menu";
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { generateMenuRequestSchema } from "@/app/api/generate-menu/validation";
 
