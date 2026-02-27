@@ -161,7 +161,7 @@ export function sanitizeUserInput(input: string): string {
 
 import { createClient } from "@/lib/supabase/server";
 
-const DEFAULT_MAX_RETRIES = 3;
+const DEFAULT_MAX_RETRIES = 5;
 const BASE_DELAY_MS = 1000;
 
 /**
@@ -226,26 +226,27 @@ export async function callGeminiWithRetry(
             return parsed;
         } catch (error: unknown) {
             lastError = error instanceof Error ? error : new Error(String(error));
+            console.warn(`[Gemini] Attempt ${attempt + 1}/${maxRetries} failed: ${lastError.message}`);
 
-            // 429 (Too Many Requests) の場合はリトライしても無駄なのでループを抜ける
-            if (
+            // 429 (Too Many Requests) 系のエラー判定
+            const isRateLimit =
                 lastError.message.includes("429") ||
                 lastError.message.includes("Too Many Requests") ||
                 lastError.message.includes("quota") ||
-                lastError.message.includes("RESOURCE_EXHAUSTED")
-            ) {
-                console.warn("[Gemini] Rate limit exceeded. Stopping retries.");
-                throw new Error(
-                    "サーバーが混み合っています。約1分ほど待ってから再度お試しください。"
-                );
-            }
-
-            console.warn(`[Gemini] Attempt ${attempt + 1}/${maxRetries} failed: ${lastError.message}`);
+                lastError.message.includes("RESOURCE_EXHAUSTED");
 
             // 最後のリトライでなければバックオフ
             if (attempt < maxRetries - 1) {
-                const delay = BASE_DELAY_MS * Math.pow(2, attempt);
+                // 429 の場合はより長めに待機するように調整 (base * 2^attempt)
+                const delay = isRateLimit
+                    ? BASE_DELAY_MS * Math.pow(2, attempt + 1) // 429時は2秒, 4秒, 8秒, 16秒...
+                    : BASE_DELAY_MS * Math.pow(2, attempt);   // その他は1秒, 2秒, 4秒, 8秒...
+
+                console.log(`[Gemini] Waiting ${delay}ms before next retry...`);
                 await new Promise(resolve => setTimeout(resolve, delay));
+            } else if (isRateLimit) {
+                // すべてのリトライに失敗し、かつ最後が429だった場合はユーザーにその旨を伝える
+                throw new Error("サーバーが混み合っており、時間を置いても解決しませんでした。約1分ほど待ってから再度お試しください。");
             }
         }
     }
