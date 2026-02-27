@@ -75,8 +75,6 @@ export default function Home() {
 
         <InputForm onSubmit={handleGenerateMenu} isLoading={loading} />
 
-        {loading && <NutritionTip />}
-
         {error && (
           <div className="bg-red-50  text-red-600  px-4 py-3 rounded-lg border border-red-200 ">
             {error}

@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { Loader2, AlertCircle, Lock, ShieldAlert, Calculator } from "lucide-react";
 import clsx from "clsx";
 import TdeeModal from "./TdeeModal";
+import NutritionTip from "./NutritionTip";
 
 import { GenerateMenuRequest, FixedMeal } from "../types/menu";
 
@@ -510,6 +511,11 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                 </div>
 
                 <div className="pt-4">
+                    {isLoading && (
+                        <div className="mb-6">
+                            <NutritionTip />
+                        </div>
+                    )}
                     <button
                         type="submit"
                         disabled={isLoading || isInvalidTotal || isCalorieExceeded}
