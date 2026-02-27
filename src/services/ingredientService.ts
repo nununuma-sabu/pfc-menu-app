@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export interface IngredientMatchResult {
   id: string;
@@ -37,4 +38,27 @@ export async function searchIngredientsByVector(
   }
 
   return data as IngredientMatchResult[];
+}
+
+/**
+ * 食材の名称からEmbedding（ベクトル表現）を取得します
+ * @param ingredientName マスタ検索用の食材名
+ * @returns 1536次元(text-embedding-004)の数値配列
+ */
+export async function getIngredientEmbedding(ingredientName: string): Promise<number[]> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error("GEMINI_API_KEY is not set");
+  }
+
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const model = genAI.getGenerativeModel({ model: "text-embedding-004" });
+
+  try {
+    const result = await model.embedContent(ingredientName);
+    return result.embedding.values;
+  } catch (error: any) {
+    console.error("Failed to generate embedding for:", ingredientName, error);
+    throw new Error(`Embedding生成に失敗しました: ${error.message || "Unknown error"}`);
+  }
 }

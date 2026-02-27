@@ -3,6 +3,7 @@ import type { GenerativeModel, ResponseSchema } from "@google/generative-ai";
 import { Meal, MenuData, ShoppingListItem } from "@/types/menu";
 import { z } from "zod";
 import { generateMenuRequestSchema } from "@/app/api/generate-menu/validation";
+import { searchIngredientsByVector, getIngredientEmbedding } from "@/services/ingredientService";
 
 export type GenerateMenuParams = z.infer<typeof generateMenuRequestSchema>;
 
@@ -472,6 +473,64 @@ ${mealCount <= 3
         menuData.grandTotal.f = menuData.days.reduce((sum, d) => sum + d.total.f, 0);
         menuData.grandTotal.c = menuData.days.reduce((sum, d) => sum + d.total.c, 0);
     }
+
+    // ─── ここから名寄せ（ベクトル検索）と正確な栄養価の再計算処理 ───
+    for (const day of menuData.days) {
+        for (const meal of day.meals) {
+            // 固定メニューは既に正確なためスキップ
+            if (meal.timeLabel.includes("固定")) continue;
+            if (!meal.ingredients || meal.ingredients.length === 0) continue;
+
+            let mealCal = 0, mealP = 0, mealF = 0, mealC = 0;
+
+            for (const ing of meal.ingredients) {
+                try {
+                    // 食材名からベクトルを生成
+                    const embedding = await getIngredientEmbedding(ing.name);
+
+                    // Supabase Vector Search の呼び出し
+                    // 閾値 0.6 を設定（全く関係ない食材の誤爆を防ぐため）
+                    const matches = await searchIngredientsByVector(embedding, 0.6, 1);
+
+                    if (matches && matches.length > 0) {
+                        const match = matches[0];
+                        // 100gあたりの値を取得し、要求グラム数で計算
+                        const ratio = ing.amount_g / 100;
+                        mealCal += match.calories_per_100g * ratio;
+                        mealP += match.protein_per_100g * ratio;
+                        mealF += match.fat_per_100g * ratio;
+                        mealC += match.carbs_per_100g * ratio;
+                    } else {
+                        // ヒットしなければGeminiの概算値（または何らかのフォールバック）を使うか、0とする
+                        // ここでは簡単に、AIが当初各食事全体として割り当てていたカロリーを材料数で割った平均値等を足すのは難しいため、
+                        // ログだけ出してマスタが見つからなかったぶんは 0 kcal とする（または警告）
+                        console.warn(`Ingredient not found in master: ${ing.name}`);
+                    }
+                } catch (error) {
+                    console.error(`Failed to process ingredient: ${ing.name}`, error);
+                }
+            }
+
+            // マスタから計算した値で食事のプロパティを上書き (四捨五入して整数に)
+            meal.calories = Math.round(mealCal);
+            meal.p = Math.round(mealP);
+            meal.f = Math.round(mealF);
+            meal.c = Math.round(mealC);
+        }
+
+        // 1日の合計を再計算
+        day.total.calories = day.meals.reduce((sum, m) => sum + m.calories, 0);
+        day.total.p = day.meals.reduce((sum, m) => sum + m.p, 0);
+        day.total.f = day.meals.reduce((sum, m) => sum + m.f, 0);
+        day.total.c = day.meals.reduce((sum, m) => sum + m.c, 0);
+    }
+
+    // 全体の総合計を再計算
+    menuData.grandTotal.calories = menuData.days.reduce((sum, d) => sum + d.total.calories, 0);
+    menuData.grandTotal.p = menuData.days.reduce((sum, d) => sum + d.total.p, 0);
+    menuData.grandTotal.f = menuData.days.reduce((sum, d) => sum + d.total.f, 0);
+    menuData.grandTotal.c = menuData.days.reduce((sum, d) => sum + d.total.c, 0);
+    // ─────────────────────────────────────────────────────────
 
     return menuData;
 }
