@@ -46,7 +46,7 @@ describe("InputForm - カロリー超過バリデーション (isCalorieExceeded
         renderForm();
 
         // 目標カロリーを 270kcal（スムージーと同じ）に変更
-        const calorieInput = screen.getByDisplayValue("2000"); // 目標カロリーの初期値
+        const calorieInput = screen.getAllByRole("spinbutton")[0]; // 目標カロリーの入力（先頭の数値入力）
         fireEvent.change(calorieInput, { target: { value: "270" } });
 
         // 1食目を固定（270kcal）→ 270 >= 270 で超過
@@ -60,7 +60,7 @@ describe("InputForm - カロリー超過バリデーション (isCalorieExceeded
     it("超過時にエラーメッセージが表示される", () => {
         renderForm();
 
-        const calorieInput = screen.getByDisplayValue("2000"); // 目標カロリーの初期値
+        const calorieInput = screen.getAllByRole("spinbutton")[0]; // 目標カロリーの入力（先頭の数値入力）
         fireEvent.change(calorieInput, { target: { value: "200" } });
 
         const select = screen.getByRole("combobox");
@@ -73,7 +73,7 @@ describe("InputForm - カロリー超過バリデーション (isCalorieExceeded
     it("超過時にエラーメッセージに具体的な数値（kcal）が表示される", () => {
         renderForm();
 
-        const calorieInput = screen.getByDisplayValue("2000"); // 目標カロリーの初期値
+        const calorieInput = screen.getAllByRole("spinbutton")[0]; // 目標カロリーの入力（先頭の数値入力）
         fireEvent.change(calorieInput, { target: { value: "100" } });
 
         const select = screen.getByRole("combobox");
@@ -87,7 +87,7 @@ describe("InputForm - カロリー超過バリデーション (isCalorieExceeded
     it("超過後に固定メニューを解除するとエラーが消えSubmitが有効になる", () => {
         renderForm();
 
-        const calorieInput = screen.getByDisplayValue("2000"); // 目標カロリーの初期値
+        const calorieInput = screen.getAllByRole("spinbutton")[0]; // 目標カロリーの入力（先頭の数値入力）
         fireEvent.change(calorieInput, { target: { value: "100" } });
 
         const select = screen.getByRole("combobox");
@@ -109,7 +109,7 @@ describe("InputForm - カロリー超過バリデーション (isCalorieExceeded
     it("目標カロリーを引き上げると超過が解消される", () => {
         renderForm();
 
-        const calorieInput = screen.getByDisplayValue("2000"); // 目標カロリーの初期値
+        const calorieInput = screen.getAllByRole("spinbutton")[0]; // 目標カロリーの入力（先頭の数値入力）
         fireEvent.change(calorieInput, { target: { value: "100" } });
 
         const select = screen.getByRole("combobox");

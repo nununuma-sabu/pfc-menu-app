@@ -169,42 +169,68 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
     return (
         <>
             <form onSubmit={handleSubmit} className="w-full max-w-md space-y-6 p-6 bg-white  rounded-xl shadow-lg border border-zinc-100 ">
-                <div>
-                    <h2 className="text-xl font-bold text-zinc-800  mb-1">PFCバランス設定</h2>
-                    <p className="text-sm text-zinc-500 ">目標カロリーとPFC比率(%)を入力してください</p>
+                {/* Top Section: Target Calories & PFC Settings */}
+                <div className="bg-zinc-50 p-5 rounded-xl border border-zinc-200 space-y-4">
+                    <div className="flex items-center justify-between mb-2">
+                        <div>
+                            <h2 className="text-lg font-bold text-zinc-800">目標設定</h2>
+                            <p className="text-xs text-zinc-500">カロリーとPFC比率を入力してください</p>
+                        </div>
+                    </div>
+
+                    {/* Calories */}
+                    <div>
+                        <label className="block text-sm font-bold text-zinc-700 mb-1">
+                            目標カロリー (kcal)
+                        </label>
+                        <input
+                            type="number"
+                            min="0"
+                            value={calories}
+                            onKeyDown={handleIntegerKeyDown}
+                            onChange={(e) => handleSanitizedChange(e, setCalories)}
+                            className="w-full p-2.5 border border-zinc-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 transition-all font-medium text-lg"
+                            required
+                        />
+                    </div>
 
                     {/* Presets */}
-                    <div className="mt-4 grid grid-cols-2 gap-2">
-                        {PRESETS.map((preset) => (
-                            <button
-                                key={preset.name}
-                                type="button"
-                                onClick={() => applyPreset(preset)}
-                                className={`p-2 text-xs font-bold rounded-lg border transition-all hover:scale-105 ${preset.color}`}
-                            >
-                                {preset.name}
-                            </button>
-                        ))}
+                    <div className="pt-2">
+                        <label className="block text-xs font-bold text-zinc-600 mb-2">
+                            PFCバランス プリセット
+                        </label>
+                        <div className="grid grid-cols-2 gap-2">
+                            {PRESETS.map((preset) => (
+                                <button
+                                    key={preset.name}
+                                    type="button"
+                                    onClick={() => applyPreset(preset)}
+                                    className={`p-2 text-xs font-bold rounded-lg border transition-all hover:scale-105 active:scale-95 ${preset.color}`}
+                                >
+                                    {preset.name}
+                                </button>
+                            ))}
+                        </div>
                     </div>
 
                     {/* TDEE Calculation Button */}
-                    <div className="mt-4">
+                    <div className="pt-1">
                         <button
                             type="button"
                             onClick={() => setShowTdeeModal(true)}
-                            className="w-full p-3 bg-indigo-50  hover:bg-indigo-100  rounded-lg border border-indigo-200  transition-all flex items-center justify-center gap-2 group"
+                            className="w-full p-2.5 bg-indigo-50 hover:bg-indigo-100 rounded-lg border border-indigo-200 transition-all flex items-center justify-center gap-2 group shadow-sm"
                         >
-                            <Calculator className="w-4 h-4 text-indigo-600  group-hover:scale-110 transition-transform" />
-                            <span className="text-sm font-bold text-indigo-700 ">TDEE自動計算 (体重 &amp; 体脂肪率から)</span>
+                            <Calculator className="w-4 h-4 text-indigo-600 group-hover:scale-110 transition-transform" />
+                            <span className="text-sm font-bold text-indigo-700">TDEE自動計算 (体重 &amp; 体脂肪率から)</span>
                         </button>
                     </div>
                 </div>
 
                 {/* Fixed Meals Section */}
-                <div className="p-4 bg-indigo-50 rounded-lg border border-indigo-200 space-y-3">
-                    <div className="flex items-center gap-2">
-                        <Lock className="w-4 h-4 text-indigo-600" />
-                        <h3 className="text-sm font-bold text-indigo-700">お気に入りレシピから固定 (任意)</h3>
+                <div className="p-5 bg-indigo-50/50 rounded-xl border border-indigo-100 space-y-4 shadow-sm">
+                    <div className="flex items-center gap-2 border-b border-indigo-200/50 pb-2">
+                        <Lock className="w-5 h-5 text-indigo-600" />
+                        <h3 className="text-sm font-bold text-indigo-800">お気に入りレシピから固定 (任意)</h3>
                     </div>
 
                     {fixedMeals.length > 0 ? (
@@ -212,15 +238,15 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                             {fixedMeals.map((fm, idx) => {
                                 const recipe = FAVORITE_RECIPES.find(r => r.id === fm.recipeId);
                                 return (
-                                    <div key={fm.mealIndex} className="flex items-center justify-between bg-white p-2 rounded border border-indigo-100 text-xs">
+                                    <div key={fm.mealIndex} className="flex items-center justify-between bg-white p-3 rounded-lg border border-indigo-100 text-sm shadow-sm transition-all hover:border-indigo-300">
                                         <div className="flex flex-col">
-                                            <span className="font-bold text-indigo-600">{fm.mealIndex + 1}食目</span>
-                                            <span className="text-zinc-600">{recipe?.name}</span>
+                                            <span className="font-bold text-indigo-600 text-xs mb-0.5">{fm.mealIndex + 1}食目</span>
+                                            <span className="text-zinc-700 font-medium">{recipe?.name}</span>
                                         </div>
                                         <button
                                             type="button"
                                             onClick={() => setFixedMeals(fixedMeals.filter((_, i) => i !== idx))}
-                                            className="text-red-500 hover:text-red-700 font-bold px-2"
+                                            className="text-red-500 hover:text-red-700 hover:bg-red-50 font-bold px-3 py-1.5 rounded-md transition-colors text-xs"
                                         >
                                             解除
                                         </button>
@@ -229,12 +255,14 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                             })}
                         </div>
                     ) : (
-                        <p className="text-[11px] text-zinc-500">固定したい食事枠とレシピを選択してください。</p>
+                        <p className="text-xs text-indigo-400/80 bg-white/50 p-3 rounded-lg border border-indigo-100/50 text-center">
+                            固定したい食事枠とレシピを選択してください。
+                        </p>
                     )}
 
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-2 pt-1">
                         <select
-                            className="p-2 text-xs border border-indigo-200 rounded bg-white"
+                            className="w-full p-2.5 text-sm font-medium border border-indigo-200 rounded-lg bg-white shadow-sm focus:ring-2 focus:ring-indigo-500 transition-shadow outline-none"
                             onChange={(e) => {
                                 const val = e.target.value;
                                 if (!val) return;
@@ -254,13 +282,13 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                                 </option>
                             ))}
                         </select>
-                        <div className="flex items-center justify-center text-[10px] text-indigo-500 italic">
+                        <div className="text-[10px] text-indigo-500/70 italic text-right px-1">
                             ※現在はシェイクのみ選択可
                         </div>
                     </div>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-6 pt-2">
                     {/* Calories */}
                     <div>
                         <label className="block text-sm font-medium text-zinc-700  mb-1">
@@ -279,7 +307,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
 
                     {/* Main Ingredient */}
                     <div>
-                        <label className="block text-sm font-medium text-zinc-700  mb-1">
+                        <label className="block text-sm font-bold text-zinc-700 mb-1">
                             メイン食材 (任意)
                         </label>
                         <input
@@ -290,20 +318,22 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                                 setMainIngredient(val);
                             }}
                             placeholder="例: 鶏胸肉, 鮭"
-                            className="w-full p-2 border border-zinc-300  rounded-md bg-white  focus:ring-2 focus:ring-blue-500"
+                            className="w-full p-2.5 border border-zinc-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 transition-all text-sm"
                         />
-                        <p className="text-xs text-zinc-500 mt-1">
+                        <p className="text-xs text-zinc-500 mt-1.5 ml-1">
                             使いたい食材があれば入力してください。
                         </p>
                     </div>
 
                     {/* Food Exclusion Section */}
-                    <div className="space-y-3 p-4 bg-zinc-50  rounded-lg border border-zinc-200 ">
-                        <h3 className="text-sm font-bold text-zinc-700 ">🚫 除外食材</h3>
+                    <div className="space-y-4 p-5 bg-zinc-50/80 rounded-xl border border-zinc-200/80 shadow-sm">
+                        <h3 className="text-sm font-bold text-zinc-800 flex items-center gap-1.5">
+                            <span className="text-base">🚫</span> 除外食材
+                        </h3>
 
                         {/* Allergies - Most critical */}
-                        <div className="p-3 bg-red-50  rounded-lg border border-red-300 ">
-                            <label className="flex items-center gap-1.5 text-sm font-bold text-red-700  mb-1">
+                        <div className="p-4 bg-red-50/80 rounded-lg border border-red-200/80 shadow-sm">
+                            <label className="flex items-center gap-1.5 text-sm font-bold text-red-700 mb-2">
                                 <ShieldAlert className="w-4 h-4" />
                                 アレルギー食材
                             </label>
@@ -312,87 +342,87 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                                 value={allergies}
                                 onChange={(e) => setAllergies(e.target.value)}
                                 placeholder="例: えび, かに, 小麦, そば"
-                                className="w-full p-2 text-sm border border-red-300  rounded-md bg-white  focus:ring-2 focus:ring-red-500"
+                                className="w-full p-2.5 text-sm border border-red-300 rounded-md bg-white focus:ring-2 focus:ring-red-500 transition-all font-medium"
                             />
-                            <p className="text-[10px] text-red-500  mt-1 font-medium">
+                            <p className="text-[10px] text-red-600/80 mt-2 font-bold leading-relaxed">
                                 ⚠️ エキス・だし・調味料を含め完全に排除します。カンマ区切りで複数入力可。
                             </p>
                         </div>
 
                         {/* Disliked Foods */}
-                        <div>
-                            <label className="block text-sm font-medium text-zinc-700  mb-1">
-                                😣 苦手な食材
+                        <div className="pt-1">
+                            <label className="block text-sm font-bold text-zinc-700 mb-1">
+                                <span className="mr-1">😣</span> 苦手な食材
                             </label>
                             <input
                                 type="text"
                                 value={dislikedFoods}
                                 onChange={(e) => setDislikedFoods(e.target.value)}
                                 placeholder="例: セロリ, パクチー"
-                                className="w-full p-2 text-sm border border-zinc-300  rounded-md bg-white  focus:ring-2 focus:ring-blue-500"
+                                className="w-full p-2.5 text-sm border border-zinc-300 rounded-lg bg-white focus:ring-2 focus:ring-zinc-400 transition-all"
                             />
-                            <p className="text-[10px] text-zinc-400 mt-1">使用しません。カンマ区切りで複数入力可。</p>
+                            <p className="text-[10px] text-zinc-500 mt-1.5 ml-1">使用しません。カンマ区切りで複数入力可。</p>
                         </div>
 
                         {/* Avoid Foods */}
                         <div>
-                            <label className="block text-sm font-medium text-zinc-700  mb-1">
-                                😐 嫌いな食材
+                            <label className="block text-sm font-bold text-zinc-700 mb-1">
+                                <span className="mr-1">😐</span> 嫌いな食材
                             </label>
                             <input
                                 type="text"
                                 value={avoidFoods}
                                 onChange={(e) => setAvoidFoods(e.target.value)}
                                 placeholder="例: ピーマン, なす"
-                                className="w-full p-2 text-sm border border-zinc-300  rounded-md bg-white  focus:ring-2 focus:ring-blue-500"
+                                className="w-full p-2.5 text-sm border border-zinc-300 rounded-lg bg-white focus:ring-2 focus:ring-zinc-400 transition-all"
                             />
-                            <p className="text-[10px] text-zinc-400 mt-1">できるだけ避けます。カンマ区切りで複数入力可。</p>
+                            <p className="text-[10px] text-zinc-500 mt-1.5 ml-1">できるだけ避けます。カンマ区切りで複数入力可。</p>
                         </div>
                     </div>
 
                     {/* Days */}
-                    <div>
-                        <label className="block text-sm font-medium text-zinc-700  mb-2">
+                    <div className="pt-2">
+                        <label className="block text-sm font-bold text-zinc-700 mb-2">
                             生成日数
                         </label>
-                        <div className="flex gap-2">
+                        <div className="flex gap-3">
                             {[1, 2, 3].map((d) => (
                                 <button
                                     key={d}
                                     type="button"
                                     onClick={() => setDays(d)}
                                     className={clsx(
-                                        "flex-1 py-2 rounded-md font-bold text-sm border transition-colors",
+                                        "flex-1 py-2.5 rounded-lg font-bold text-sm border transition-all active:scale-95 shadow-sm",
                                         days === d
-                                            ? "bg-emerald-600 text-white border-emerald-600"
-                                            : "bg-white  text-zinc-700  border-zinc-300  hover:bg-zinc-50 "
+                                            ? "bg-emerald-600 text-white border-emerald-600 ring-2 ring-emerald-600/20"
+                                            : "bg-white text-zinc-600 border-zinc-200 hover:border-emerald-300 hover:bg-emerald-50/50"
                                     )}
                                 >
                                     {d}日分
                                 </button>
                             ))}
                         </div>
-                        <p className="text-xs text-zinc-500 mt-1">
+                        <p className="text-xs text-zinc-500 mt-2 ml-1">
                             まとめ買い向け。日ごとに異なるメニューを提案します。
                         </p>
                     </div>
 
                     {/* Meal Count */}
                     <div>
-                        <label className="block text-sm font-medium text-zinc-700  mb-2">
+                        <label className="block text-sm font-bold text-zinc-700 mb-2">
                             食事回数（1日あたり）
                         </label>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2.5">
                             {[3, 4, 5, 6].map((count) => (
                                 <button
                                     key={count}
                                     type="button"
                                     onClick={() => setMealCount(count)}
                                     className={clsx(
-                                        "flex-1 py-2 rounded-md font-bold text-sm border transition-colors",
+                                        "flex-1 py-2.5 rounded-lg font-bold text-sm border transition-all active:scale-95 shadow-sm",
                                         mealCount === count
-                                            ? "bg-blue-600 text-white border-blue-600"
-                                            : "bg-white  text-zinc-700  border-zinc-300  hover:bg-zinc-50 "
+                                            ? "bg-blue-600 text-white border-blue-600 ring-2 ring-blue-600/20"
+                                            : "bg-white text-zinc-600 border-zinc-200 hover:border-blue-300 hover:bg-blue-50/50"
                                     )}
                                 >
                                     {count}食
@@ -402,9 +432,9 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                     </div>
 
                     {/* PFC Ratios */}
-                    <div className="grid grid-cols-3 gap-4">
-                        <div>
-                            <label className="block text-sm font-medium text-zinc-700  mb-1">
+                    <div className="grid grid-cols-3 gap-3 pt-2">
+                        <div className="bg-zinc-50 p-3 rounded-lg border border-zinc-200">
+                            <label className="block text-xs font-bold text-zinc-600 mb-1.5 text-center">
                                 P (%)
                             </label>
                             <input
@@ -414,15 +444,15 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                                 value={pRatio}
                                 onKeyDown={handleIntegerKeyDown}
                                 onChange={(e) => handleSanitizedChange(e, setPRatio)}
-                                className="w-full p-2 border border-zinc-300  rounded-md bg-white  focus:ring-2 focus:ring-blue-500 text-center"
+                                className="w-full p-2 border border-zinc-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 text-center font-bold text-sm"
                                 required
                             />
-                            <div className="text-xs text-center text-zinc-500 mt-1">
+                            <div className="text-xs font-medium text-center text-zinc-500 mt-2 bg-white rounded border border-zinc-100 py-1 shadow-sm">
                                 {grams.p}g
                             </div>
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-zinc-700  mb-1">
+                        <div className="bg-zinc-50 p-3 rounded-lg border border-zinc-200">
+                            <label className="block text-xs font-bold text-zinc-600 mb-1.5 text-center">
                                 F (%)
                             </label>
                             <input
@@ -432,15 +462,15 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                                 value={fRatio}
                                 onKeyDown={handleIntegerKeyDown}
                                 onChange={(e) => handleSanitizedChange(e, setFRatio)}
-                                className="w-full p-2 border border-zinc-300  rounded-md bg-white  focus:ring-2 focus:ring-blue-500 text-center"
+                                className="w-full p-2 border border-zinc-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 text-center font-bold text-sm"
                                 required
                             />
-                            <div className="text-xs text-center text-zinc-500 mt-1">
+                            <div className="text-xs font-medium text-center text-zinc-500 mt-2 bg-white rounded border border-zinc-100 py-1 shadow-sm">
                                 {grams.f}g
                             </div>
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-zinc-700  mb-1">
+                        <div className="bg-zinc-50 p-3 rounded-lg border border-zinc-200">
+                            <label className="block text-xs font-bold text-zinc-600 mb-1.5 text-center">
                                 C (%)
                             </label>
                             <input
@@ -450,10 +480,10 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                                 value={cRatio}
                                 onKeyDown={handleIntegerKeyDown}
                                 onChange={(e) => handleSanitizedChange(e, setCRatio)}
-                                className="w-full p-2 border border-zinc-300  rounded-md bg-white  focus:ring-2 focus:ring-blue-500 text-center"
+                                className="w-full p-2 border border-zinc-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 text-center font-bold text-sm"
                                 required
                             />
-                            <div className="text-xs text-center text-zinc-500 mt-1">
+                            <div className="text-xs font-medium text-center text-zinc-500 mt-2 bg-white rounded border border-zinc-100 py-1 shadow-sm">
                                 {grams.c}g
                             </div>
                         </div>
@@ -461,56 +491,61 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
 
                     {/* Validation Feedback */}
                     <div className={clsx(
-                        "text-sm font-medium flex items-center justify-center gap-2 p-2 rounded-md transition-colors",
-                        isInvalidTotal ? "bg-red-50 text-red-600  " : "bg-green-50 text-green-600  "
+                        "text-sm font-bold flex items-center justify-center gap-2 p-3 rounded-lg transition-all shadow-sm border",
+                        isInvalidTotal ? "bg-red-50 text-red-600 border-red-200" : "bg-green-50 text-green-700 border-green-200"
                     )}>
                         {isInvalidTotal ? (
                             <>
                                 <AlertCircle className="w-4 h-4" />
-                                合計: {totalRatio}% (100%にしてください)
+                                合計: {totalRatio}% (100%に調整してください)
                             </>
                         ) : (
-                            "合計: 100% OK"
+                            "✨ 合計: 100% (OK)"
                         )}
                     </div>
 
                     {isCalorieExceeded && (
-                        <div className="text-red-500 text-sm bg-red-50 p-3 rounded-lg border border-red-200 flex items-start gap-2">
-                            <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
-                            <span>
-                                固定メニューの合計カロリー（{fixedCalories} kcal）が目標カロリー（{targetCalories} kcal）以上です。<br />
+                        <div className="text-red-600 text-sm bg-red-50 p-4 rounded-xl border border-red-200 flex items-start gap-3 shadow-sm">
+                            <AlertCircle className="w-5 h-5 mt-0.5 shrink-0" />
+                            <div className="font-medium leading-relaxed">
+                                固定メニューの合計カロリー（<span className="font-bold">{fixedCalories} kcal</span>）が<br />
+                                目標カロリー（<span className="font-bold">{targetCalories} kcal</span>）以上です。<br />
                                 目標カロリーを上げるか、固定メニューを減らしてください。
-                            </span>
+                            </div>
                         </div>
                     )}
 
                     {error && (
-                        <div className="text-red-500 text-sm bg-red-50  p-3 rounded-lg border border-red-200 ">
+                        <div className="text-red-600 font-medium text-sm bg-red-50 p-4 rounded-xl border border-red-200 shadow-sm flex items-start gap-2">
+                            <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
                             {error}
                         </div>
                     )}
                 </div>
 
-                <button
-                    type="submit"
-                    disabled={isLoading || isInvalidTotal || isCalorieExceeded}
-                    className={clsx(
-                        "w-full py-3 px-4 mt-6 rounded-lg font-bold text-white transition-all",
-                        (isLoading || isInvalidTotal || isCalorieExceeded)
-                            ? "bg-zinc-400 cursor-not-allowed"
-                            : "bg-blue-600 hover:bg-blue-700 active:scale-95 shadow-md hover:shadow-lg"
-                    )}
-                >
-                    {isLoading ? (
-                        <span className="flex items-center justify-center gap-2">
-                            <Loader2 className="animate-spin w-5 h-5" />
-                            提案を生成中
-                        </span>
-                    ) : (
-                        "献立を提案する"
-                    )}
-                </button>
+                <div className="pt-4">
+                    <button
+                        type="submit"
+                        disabled={isLoading || isInvalidTotal || isCalorieExceeded}
+                        className={clsx(
+                            "w-full py-3.5 px-4 rounded-xl font-bold text-white transition-all text-lg shadow-md flex items-center justify-center h-14",
+                            (isLoading || isInvalidTotal || isCalorieExceeded)
+                                ? "bg-zinc-400 cursor-not-allowed opacity-90"
+                                : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-[0.98] hover:shadow-lg"
+                        )}
+                    >
+                        {isLoading ? (
+                            <span className="flex items-center justify-center gap-2">
+                                <Loader2 className="animate-spin w-5 h-5" />
+                                提案を生成中...
+                            </span>
+                        ) : (
+                            "献立を提案する"
+                        )}
+                    </button>
+                </div>
             </form>
+
             {showTdeeModal && (
                 <TdeeModal
                     onApply={handleTdeeApply}

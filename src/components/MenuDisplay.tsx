@@ -55,30 +55,38 @@ function MealCard({ meal }: { meal: Meal }) {
                     </div>
                 </div>
 
-                {/* Recipe Details */}
+                {/* Recipe Details (Accordion) */}
                 {(meal.ingredients || meal.steps) && (
-                    <div className="pt-2 space-y-3 border-t border-zinc-50">
+                    <div className="pt-2 space-y-2 border-t border-zinc-50">
                         {meal.ingredients && meal.ingredients.length > 0 && (
-                            <div className="text-sm">
-                                <h5 className="font-bold text-zinc-700  mb-1 flex items-center gap-1">
-                                    <Utensils className="w-3 h-3" /> 材料
-                                </h5>
-                                <ul className="list-disc list-inside text-zinc-600  pl-1 space-y-0.5 text-xs">
+                            <details className="group">
+                                <summary className="flex items-center justify-between cursor-pointer list-none text-sm font-bold text-zinc-700 hover:text-indigo-600 transition-colors bg-zinc-50 p-2 rounded-md">
+                                    <span className="flex items-center gap-1"><Utensils className="w-4 h-4" /> 材料</span>
+                                    <span className="transition group-open:rotate-180">
+                                        <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+                                    </span>
+                                </summary>
+                                <ul className="list-disc list-inside text-zinc-600 pl-3 pt-2 space-y-1 text-xs">
                                     {meal.ingredients.map((ing, i) => (
                                         <li key={i}>{ing.name} <span className="text-zinc-400">({ing.amount})</span></li>
                                     ))}
                                 </ul>
-                            </div>
+                            </details>
                         )}
                         {meal.steps && meal.steps.length > 0 && (
-                            <div className="text-sm">
-                                <h5 className="font-bold text-zinc-700  mb-1">調理手順</h5>
-                                <ol className="list-decimal list-inside text-zinc-600  pl-1 space-y-1 text-xs">
+                            <details className="group">
+                                <summary className="flex items-center justify-between cursor-pointer list-none text-sm font-bold text-zinc-700 hover:text-indigo-600 transition-colors bg-zinc-50 p-2 rounded-md">
+                                    <span>調理手順</span>
+                                    <span className="transition group-open:rotate-180">
+                                        <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+                                    </span>
+                                </summary>
+                                <ol className="list-decimal list-inside text-zinc-600 pl-3 pt-2 space-y-1.5 text-xs">
                                     {meal.steps.map((step, i) => (
                                         <li key={i}>{step}</li>
                                     ))}
                                 </ol>
-                            </div>
+                            </details>
                         )}
                     </div>
                 )}
