@@ -31,15 +31,7 @@ export async function updateSession(request: NextRequest) {
         request.nextUrl.pathname.startsWith('/signup') ||
         request.nextUrl.pathname.startsWith('/auth')
 
-    const isApiRoute = request.nextUrl.pathname.startsWith('/api/')
-
     if (!user && !isAuthRoute) {
-        if (isApiRoute) {
-            return NextResponse.json(
-                { error: '認証されていません。' },
-                { status: 401 }
-            )
-        }
         // 未ログイン状態でルート等にアクセスした場合はログインへ
         const url = request.nextUrl.clone()
         url.pathname = '/login'

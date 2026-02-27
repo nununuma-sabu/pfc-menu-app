@@ -4,6 +4,27 @@ import { generateMenuRequestSchema } from "./validation";
 import { generateMenu } from "@/services/geminiService";
 import { createClient } from "@/lib/supabase/server";
 
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
+
+// ─────────────────────────────────────────────
+// Upstash Redis レートリミット設定
+// ─────────────────────────────────────────────
+function getRatelimit(): Ratelimit | null {
+  if (
+    !process.env.UPSTASH_REDIS_REST_URL ||
+    !process.env.UPSTASH_REDIS_REST_TOKEN
+  ) {
+    return null;
+  }
+  return new Ratelimit({
+    redis: Redis.fromEnv(),
+    limiter: Ratelimit.slidingWindow(30, "1 m"),
+    analytics: true,
+    prefix: "pfc:ratelimit",
+  });
+}
+
 export async function POST(request: Request) {
   try {
     const supabase = await createClient();
@@ -13,6 +34,28 @@ export async function POST(request: Request) {
 
     if (!user) {
       return NextResponse.json({ error: "認証されていません。" }, { status: 401 });
+    }
+
+    // --- レートリミット (ユーザー単位) ---
+    const rl = getRatelimit();
+    if (rl) {
+      const { success, limit, reset } = await rl.limit(user.id);
+      if (!success) {
+        const retryAfterSec = Math.ceil((reset - Date.now()) / 1000);
+        return NextResponse.json(
+          {
+            error: `リクエストが多すぎます。約${retryAfterSec}秒後に再度お試しください。`,
+          },
+          {
+            status: 429,
+            headers: {
+              "X-RateLimit-Limit": limit.toString(),
+              "X-RateLimit-Remaining": "0",
+              "Retry-After": retryAfterSec.toString(),
+            },
+          }
+        );
+      }
     }
 
     const rawBody = await request.json();
