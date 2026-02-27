@@ -25,7 +25,7 @@ function MealCard({ meal }: { meal: Meal }) {
     const { icon: Icon, color } = getMealStyle(meal.timeLabel);
 
     return (
-        <div className="bg-white  rounded-xl shadow-md overflow-hidden border border-zinc-100  hover:shadow-lg transition-shadow flex flex-col h-full">
+        <div className="bg-white rounded-xl shadow-md overflow-hidden border border-zinc-100 hover:shadow-lg transition-shadow flex flex-col">
             <div className={`p-4 ${color} text-white flex items-center gap-2`}>
                 <Icon className="w-5 h-5" />
                 <h3 className="font-bold text-lg">{meal.timeLabel}</h3>
