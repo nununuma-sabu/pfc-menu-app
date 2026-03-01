@@ -7,6 +7,7 @@ AI PFC Menu Generator の技術的な仕様・設計方針についてまとめ�
 | ドキュメント | 内容 |
 |---|---|
 | [setup.md](./setup.md) | 開発環境のセットアップ・技術スタック・デプロイ |
+| [tech_selection.md](./tech_selection.md) | 技術選定の理由・背景（基本構成・PaaS・ライブラリ） |
 | [architecture.md](./architecture.md) | システムアーキテクチャ・ディレクトリ構成・認証(Supabase) |
 | [testing.md](./testing.md) | テスト構成・方針（Vitest, React Testing Library） |
 | [validation.md](./validation.md) | 入力バリデーション設計（フロントエンド／バックエンド） |
