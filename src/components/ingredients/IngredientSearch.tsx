@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useDebounce } from 'use-debounce';
-import { searchIngredients, IngredientSearchResult, IngredientSearchParams } from '@/app/actions/ingredients';
+import { searchIngredients, IngredientSearchResult } from '@/app/actions/ingredients';
 import { Search, Loader2 } from 'lucide-react';
 
 export default function IngredientSearch() {
