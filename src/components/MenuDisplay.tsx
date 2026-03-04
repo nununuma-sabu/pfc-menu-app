@@ -59,7 +59,7 @@ function MealCard({ meal, dayLabel }: { meal: Meal, dayLabel: string }) {
                     "absolute top-3 right-3 p-2 rounded-full transition-all z-10",
                     saveSuccess
                         ? "bg-white text-pink-500 shadow-sm opacity-100"
-                        : "bg-black/20 text-white hover:bg-white hover:text-pink-500 backdrop-blur-sm opacity-0 group-hover:opacity-100 focus:opacity-100"
+                        : "bg-black/20 text-white hover:bg-white hover:text-pink-500 backdrop-blur-sm opacity-100 md:opacity-0 md:group-hover:opacity-100 focus:opacity-100"
                 )}
             >
                 <Heart className={clsx("w-5 h-5 transition-transform", saveSuccess ? "fill-pink-500 scale-110" : "scale-100")} />

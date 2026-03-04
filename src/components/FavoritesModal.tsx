@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X } from "lucide-react";
+import { createPortal } from "react-dom";
+import { X, Utensils, Sunrise, Sun, Moon, Coffee, Trash2, Clock, CheckCircle2 } from "lucide-react";
 import { getSavedMeals } from "@/app/actions/favorites";
 import FavoritesClient from "@/components/FavoritesClient";
 import { SavedMeal } from "@/types/menu";
@@ -12,9 +13,14 @@ interface FavoritesModalProps {
 }
 
 export default function FavoritesModal({ isOpen, onClose }: FavoritesModalProps) {
+    const [mounted, setMounted] = useState(false);
     const [meals, setMeals] = useState<SavedMeal[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     // ESCキーで閉じる
     useEffect(() => {
@@ -45,10 +51,10 @@ export default function FavoritesModal({ isOpen, onClose }: FavoritesModalProps)
         }
     }, [isOpen]);
 
-    if (!isOpen) return null;
+    if (!isOpen || !mounted) return null;
 
-    return (
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+    return createPortal(
+        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
             <div className="bg-slate-50 w-full max-w-5xl max-h-full rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
                 {/* Header */}
                 <div className="flex items-center justify-between p-4 sm:p-6 border-b border-zinc-200 bg-white">
@@ -81,6 +87,7 @@ export default function FavoritesModal({ isOpen, onClose }: FavoritesModalProps)
                     )}
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }

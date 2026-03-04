@@ -18,10 +18,11 @@ export default function Home() {
   const [dailyTarget, setDailyTarget] = useState<Nutrition | null>(null);
 
   useEffect(() => {
-    const checkUserAndDisclaimer = async () => {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+    let mounted = true;
+    const supabase = createClient();
 
+    const checkDisclaimer = async (user: any | null) => {
+      if (!mounted) return;
       if (user) {
         // ログインしている場合、セッションストレージを確認
         const hasSeenDisclaimer = sessionStorage.getItem("disclaimerShown");
@@ -36,7 +37,24 @@ export default function Home() {
       }
     };
 
-    checkUserAndDisclaimer();
+    // 初期チェック
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      checkDisclaimer(user);
+    });
+
+    // 認証状態の変更を監視
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN" || event === "INITIAL_SESSION") {
+        checkDisclaimer(session?.user ?? null);
+      } else if (event === "SIGNED_OUT") {
+        checkDisclaimer(null);
+      }
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const handleDisclaimerComplete = () => {

@@ -66,9 +66,9 @@ export default function FavoritesClient({ initialMeals }: FavoritesClientProps) 
                             {/* Delete Button Overlay */}
                             <button
                                 onClick={() => handleDelete(saved.id)}
-                                disabled={isDeletingThis}
-                                title="削除する"
-                                className="absolute top-3 right-3 p-2 bg-black/20 text-white rounded-full opacity-0 group-hover:opacity-100 focus:opacity-100 hover:bg-red-500 transition-all z-10 disabled:opacity-50"
+                                disabled={isDeleting === saved.id}
+                                className="absolute top-3 right-3 p-2 bg-black/20 text-white rounded-full opacity-100 md:opacity-0 md:group-hover:opacity-100 focus:opacity-100 hover:bg-red-500 transition-all z-10 disabled:opacity-50"
+                                aria-label="削除"
                             >
                                 <Trash2 className="w-4 h-4" />
                             </button>
