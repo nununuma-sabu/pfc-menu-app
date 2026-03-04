@@ -14,14 +14,14 @@ export default function IngredientSearch() {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        // If the search term is empty, clear results and don't search
-        if (!debouncedSearchTerm.trim()) {
-            setResults([]);
-            setIsSearching(false);
-            return;
-        }
-
         const performSearch = async () => {
+            // If the search term is empty, clear results and don't search
+            if (!debouncedSearchTerm.trim()) {
+                setResults([]);
+                setIsSearching(false);
+                return;
+            }
+
             setIsSearching(true);
             setError(null);
 
