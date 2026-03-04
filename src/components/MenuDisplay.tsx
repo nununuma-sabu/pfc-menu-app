@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Utensils, Moon, Sun, Sunrise, Coffee, ShoppingCart, Calendar, ChevronDown } from "lucide-react";
+import { Utensils, Moon, Sun, Sunrise, Coffee, ShoppingCart, Calendar, ChevronDown, Heart, Sparkles } from "lucide-react";
 import clsx from "clsx";
+
+import { saveMenu } from "@/app/actions/favorites";
 
 import { Meal, MenuData, ShoppingListItem, Nutrition } from "../types/menu";
 import PfcComparisonChart from "./PfcComparisonChart";
@@ -154,14 +156,60 @@ function groupByCategory(list: ShoppingListItem[]) {
 
 export default function MenuDisplay({ menu, dailyTarget }: MenuDisplayProps) {
     const [activeDay, setActiveDay] = useState(0);
+    const [isSaving, setIsSaving] = useState(false);
+    const [saveSuccess, setSaveSuccess] = useState(false);
+    const [saveError, setSaveError] = useState<string | null>(null);
 
     if (!menu || !menu.days || menu.days.length === 0) return null;
 
     const isMultiDay = menu.days.length > 1;
     const currentDay = menu.days[activeDay];
 
+    const handleSaveMenu = async () => {
+        setIsSaving(true);
+        setSaveError(null);
+        try {
+            const res = await saveMenu(menu);
+            if (res.success) {
+                setSaveSuccess(true);
+            } else {
+                setSaveError(res.error || "保存に失敗しました。ログインしているか確認してください。");
+            }
+        } catch (error) {
+            setSaveError("保存中にエラーが発生しました。");
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
     return (
         <div className="w-full max-w-5xl space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2">
+                <h2 className="text-2xl font-bold text-zinc-800 flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-yellow-500" />
+                    AIが提案する献立
+                </h2>
+                <button
+                    onClick={handleSaveMenu}
+                    disabled={isSaving || saveSuccess}
+                    className={clsx(
+                        "flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm transition-all",
+                        saveSuccess
+                            ? "bg-pink-50 text-pink-600 border border-pink-200 shadow-inner cursor-default"
+                            : "bg-white text-zinc-700 border border-zinc-200 hover:border-pink-300 hover:text-pink-500 hover:shadow-md hover:-translate-y-0.5"
+                    )}
+                >
+                    <Heart className={clsx("w-4 h-4 transition-transform", saveSuccess ? "fill-pink-500 scale-110" : "scale-100 group-hover:scale-110")} />
+                    {isSaving ? "保存中..." : saveSuccess ? "お気に入りに保存しました" : "お気に入りに保存"}
+                </button>
+            </div>
+
+            {saveError && (
+                <div className="text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-100 flex items-center gap-2">
+                    <span className="font-bold">エラー:</span> {saveError}
+                </div>
+            )}
+
             {/* Day Tabs */}
             {isMultiDay && (
                 <div className="flex gap-2">

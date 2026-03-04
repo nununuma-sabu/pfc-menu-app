@@ -58,3 +58,10 @@ export interface GenerateMenuRequest {
     days: number;
     fixedMeals?: FixedMeal[];
 }
+
+export interface SavedMenu {
+    id: string;             // UUID
+    user_id: string;        // UUID of the user
+    menu_data: MenuData;    // The full menu object
+    created_at: string;     // ISO Date string
+}
