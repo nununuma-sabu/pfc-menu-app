@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import { Loader2, AlertCircle, Lock, ShieldAlert, Calculator } from "lucide-react";
 import clsx from "clsx";
 import TdeeModal from "./TdeeModal";
@@ -19,6 +19,29 @@ const FAVORITE_RECIPES = [
         description: "ホエイプロテイン+冷凍バナナ+ベリー+イヌリンのスムージー",
     }
 ];
+
+const PRESETS = [
+    { name: "標準バランス", p: 15, f: 25, c: 60, color: "bg-blue-100 text-blue-700   border-blue-200 " },
+    { name: "ローファット", p: 30, f: 10, c: 60, color: "bg-green-100 text-green-700   border-green-200 " },
+    { name: "ケトジェニック", p: 20, f: 75, c: 5, color: "bg-purple-100 text-purple-700   border-purple-200 " },
+    { name: "筋肥大 (高タンパク)", p: 40, f: 20, c: 40, color: "bg-orange-100 text-orange-700   border-orange-200 " },
+];
+
+const PresetButtons = React.memo(({ onApply }: { onApply: (preset: { p: number; f: number; c: number }) => void }) => (
+    <div className="grid grid-cols-2 gap-2">
+        {PRESETS.map((preset) => (
+            <button
+                key={preset.name}
+                type="button"
+                onClick={() => onApply(preset)}
+                className={`p-2 text-xs font-bold rounded-lg border transition-all hover:scale-105 active:scale-95 ${preset.color}`}
+            >
+                {preset.name}
+            </button>
+        ))}
+    </div>
+));
+PresetButtons.displayName = "PresetButtons";
 
 interface InputFormProps {
     onSubmit: (data: GenerateMenuRequest) => Promise<void>;
@@ -58,7 +81,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
         };
     }, [calories, pRatio, fRatio, cRatio]);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = useCallback((e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
 
@@ -98,7 +121,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
             days,
             fixedMeals
         });
-    };
+    }, [calories, pRatio, fRatio, cRatio, mainIngredient, allergies, dislikedFoods, avoidFoods, mealCount, days, fixedMeals, grams, onSubmit]);
 
     const totalRatio = (Number(pRatio) || 0) + (Number(fRatio) || 0) + (Number(cRatio) || 0);
     const isInvalidTotal = totalRatio !== 100;
@@ -115,18 +138,11 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
     const targetCalories = Number(calories) || 0;
     const isCalorieExceeded = fixedMeals.length > 0 && fixedCalories >= targetCalories;
 
-    const PRESETS = [
-        { name: "標準バランス", p: 15, f: 25, c: 60, color: "bg-blue-100 text-blue-700   border-blue-200 " },
-        { name: "ローファット", p: 30, f: 10, c: 60, color: "bg-green-100 text-green-700   border-green-200 " },
-        { name: "ケトジェニック", p: 20, f: 75, c: 5, color: "bg-purple-100 text-purple-700   border-purple-200 " },
-        { name: "筋肥大 (高タンパク)", p: 40, f: 20, c: 40, color: "bg-orange-100 text-orange-700   border-orange-200 " },
-    ];
-
-    const applyPreset = (preset: { p: number; f: number; c: number }) => {
+    const applyPreset = useCallback((preset: { p: number; f: number; c: number }) => {
         setPRatio(preset.p.toString());
         setFRatio(preset.f.toString());
         setCRatio(preset.c.toString());
-    };
+    }, []);
 
     const handleTdeeApply = (data: { calories: number; pRatio?: number; fRatio?: number; cRatio?: number }) => {
         setCalories(data.calories.toString());
@@ -228,18 +244,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                         <label className="block text-xs font-bold text-zinc-600 mb-2">
                             PFCバランス プリセット
                         </label>
-                        <div className="grid grid-cols-2 gap-2">
-                            {PRESETS.map((preset) => (
-                                <button
-                                    key={preset.name}
-                                    type="button"
-                                    onClick={() => applyPreset(preset)}
-                                    className={`p-2 text-xs font-bold rounded-lg border transition-all hover:scale-105 active:scale-95 ${preset.color}`}
-                                >
-                                    {preset.name}
-                                </button>
-                            ))}
-                        </div>
+                        <PresetButtons onApply={applyPreset} />
                     </div>
 
                     {/* TDEE Calculation Button */}

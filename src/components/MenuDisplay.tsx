@@ -62,7 +62,7 @@ function MealCard({ meal, dayLabel }: { meal: Meal, dayLabel: string }) {
                         : "bg-black/20 text-white hover:bg-white hover:text-pink-500 backdrop-blur-sm opacity-100 md:opacity-0 md:group-hover:opacity-100 focus:opacity-100"
                 )}
             >
-                <Heart className={clsx("w-5 h-5 transition-transform", saveSuccess ? "fill-pink-500 scale-110" : "scale-100")} />
+                <Heart className={clsx("w-5 h-5", saveSuccess ? "fill-pink-500 animate-heart-bounce" : "scale-100 transition-transform")} />
             </button>
             <div className={`p-4 ${color} text-white flex items-center gap-2 pr-14`}>
                 <Icon className="w-5 h-5" />
