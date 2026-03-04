@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { Heart } from 'lucide-react'
-import LogoutButton from './LogoutButton'
+import HeaderClientActions from './HeaderClientActions'
 
 export default async function Header() {
     const supabase = await createClient()
@@ -16,17 +15,7 @@ export default async function Header() {
 
                 <div className="flex items-center gap-4 text-sm font-medium">
                     {user && (
-                        <div className="flex items-center gap-4">
-                            <Link href="/favorites" className="flex items-center gap-1.5 text-zinc-600 dark:text-zinc-300 hover:text-indigo-600 transition-colors font-semibold">
-                                <Heart className="w-4 h-4" />
-                                <span className="hidden sm:inline">お気に入り</span>
-                            </Link>
-                            <span className="text-gray-300 dark:text-gray-600">|</span>
-                            <span className="text-gray-600 dark:text-gray-300 hidden md:inline-block">
-                                {user.email}
-                            </span>
-                            <LogoutButton />
-                        </div>
+                        <HeaderClientActions email={user.email} />
                     )}
                 </div>
             </div>

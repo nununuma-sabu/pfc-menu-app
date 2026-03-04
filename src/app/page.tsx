@@ -1,21 +1,48 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import InputForm from "@/components/InputForm";
 import MenuDisplay from "@/components/MenuDisplay";
-import NutritionTip from "@/components/NutritionTip";
 import DisclaimerScreen from "@/components/DisclaimerScreen";
 import { Sparkles } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 
 import { MenuData, GenerateMenuRequest, Nutrition } from "@/types/menu";
 
 export default function Home() {
-  const [showDisclaimer, setShowDisclaimer] = useState(true);
+  const [showDisclaimer, setShowDisclaimer] = useState<boolean | null>(null);
   const [menu, setMenu] = useState<MenuData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // 設定値（1日あたり）をPfcComparisonChartに渡すために保持
   const [dailyTarget, setDailyTarget] = useState<Nutrition | null>(null);
+
+  useEffect(() => {
+    const checkUserAndDisclaimer = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (user) {
+        // ログインしている場合、セッションストレージを確認
+        const hasSeenDisclaimer = sessionStorage.getItem("disclaimerShown");
+        if (!hasSeenDisclaimer) {
+          setShowDisclaimer(true);
+        } else {
+          setShowDisclaimer(false);
+        }
+      } else {
+        // 未ログイン時は表示しない
+        setShowDisclaimer(false);
+      }
+    };
+
+    checkUserAndDisclaimer();
+  }, []);
+
+  const handleDisclaimerComplete = () => {
+    sessionStorage.setItem("disclaimerShown", "true");
+    setShowDisclaimer(false);
+  };
 
   const handleGenerateMenu = async (data: GenerateMenuRequest) => {
     setMenu(null);
@@ -53,8 +80,13 @@ export default function Home() {
     }
   };
 
+  if (showDisclaimer === null) {
+    // 判定中は何も表示しない（チラつき防止）
+    return <main className="min-h-screen bg-slate-50 py-12 px-4 sm:px-8 font-sans" />;
+  }
+
   if (showDisclaimer) {
-    return <DisclaimerScreen onComplete={() => setShowDisclaimer(false)} />;
+    return <DisclaimerScreen onComplete={handleDisclaimerComplete} />;
   }
 
   return (
