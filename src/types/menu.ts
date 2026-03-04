@@ -59,9 +59,14 @@ export interface GenerateMenuRequest {
     fixedMeals?: FixedMeal[];
 }
 
-export interface SavedMenu {
+export interface MealSaveData {
+    dayLabel: string;
+    meal: Meal;
+}
+
+export interface SavedMeal {
     id: string;             // UUID
     user_id: string;        // UUID of the user
-    menu_data: MenuData;    // The full menu object
+    menu_data: MealSaveData; // The individual meal object with context
     created_at: string;     // ISO Date string
 }

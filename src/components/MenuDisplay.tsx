@@ -4,10 +4,9 @@ import { useState } from "react";
 import { Utensils, Moon, Sun, Sunrise, Coffee, ShoppingCart, Calendar, ChevronDown, Heart, Sparkles } from "lucide-react";
 import clsx from "clsx";
 
-import { saveMenu } from "@/app/actions/favorites";
-
-import { Meal, MenuData, ShoppingListItem, Nutrition } from "../types/menu";
+import { Meal, MenuData, ShoppingListItem, Nutrition, MealSaveData } from "../types/menu";
 import PfcComparisonChart from "./PfcComparisonChart";
+import { saveMeal } from "@/app/actions/favorites";
 
 interface MenuDisplayProps {
     menu: MenuData | null;
@@ -15,7 +14,10 @@ interface MenuDisplayProps {
     dailyTarget?: Nutrition | null;
 }
 
-function MealCard({ meal }: { meal: Meal }) {
+function MealCard({ meal, dayLabel }: { meal: Meal, dayLabel: string }) {
+    const [isSaving, setIsSaving] = useState(false);
+    const [saveSuccess, setSaveSuccess] = useState(false);
+
     const getMealStyle = (label: string) => {
         if (label.includes("朝")) return { icon: Sunrise, color: "bg-orange-500" };
         if (label.includes("昼")) return { icon: Sun, color: "bg-yellow-500" };
@@ -26,9 +28,43 @@ function MealCard({ meal }: { meal: Meal }) {
 
     const { icon: Icon, color } = getMealStyle(meal.timeLabel);
 
+    const handleSaveMeal = async () => {
+        setIsSaving(true);
+        try {
+            const mealDataToSave: MealSaveData = {
+                dayLabel,
+                meal
+            };
+            const res = await saveMeal(mealDataToSave);
+            if (res.success) {
+                setSaveSuccess(true);
+            } else {
+                alert(res.error || "保存に失敗しました。ログインしているか確認してください。");
+            }
+        } catch (error) {
+            alert("保存中にエラーが発生しました。");
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
     return (
-        <div className="bg-white rounded-xl shadow-md overflow-hidden border border-zinc-100 hover:shadow-lg transition-shadow flex flex-col">
-            <div className={`p-4 ${color} text-white flex items-center gap-2`}>
+        <div className="bg-white rounded-xl shadow-md overflow-hidden border border-zinc-100 hover:shadow-lg transition-shadow flex flex-col relative group">
+            {/* Save Button Overlay */}
+            <button
+                onClick={handleSaveMeal}
+                disabled={isSaving || saveSuccess}
+                title={saveSuccess ? "保存済み" : "この食事を保存する"}
+                className={clsx(
+                    "absolute top-3 right-3 p-2 rounded-full transition-all z-10",
+                    saveSuccess
+                        ? "bg-white text-pink-500 shadow-sm opacity-100"
+                        : "bg-black/20 text-white hover:bg-white hover:text-pink-500 backdrop-blur-sm opacity-0 group-hover:opacity-100 focus:opacity-100"
+                )}
+            >
+                <Heart className={clsx("w-5 h-5 transition-transform", saveSuccess ? "fill-pink-500 scale-110" : "scale-100")} />
+            </button>
+            <div className={`p-4 ${color} text-white flex items-center gap-2 pr-14`}>
                 <Icon className="w-5 h-5" />
                 <h3 className="font-bold text-lg">{meal.timeLabel}</h3>
             </div>
@@ -156,31 +192,11 @@ function groupByCategory(list: ShoppingListItem[]) {
 
 export default function MenuDisplay({ menu, dailyTarget }: MenuDisplayProps) {
     const [activeDay, setActiveDay] = useState(0);
-    const [isSaving, setIsSaving] = useState(false);
-    const [saveSuccess, setSaveSuccess] = useState(false);
-    const [saveError, setSaveError] = useState<string | null>(null);
 
     if (!menu || !menu.days || menu.days.length === 0) return null;
 
     const isMultiDay = menu.days.length > 1;
     const currentDay = menu.days[activeDay];
-
-    const handleSaveMenu = async () => {
-        setIsSaving(true);
-        setSaveError(null);
-        try {
-            const res = await saveMenu(menu);
-            if (res.success) {
-                setSaveSuccess(true);
-            } else {
-                setSaveError(res.error || "保存に失敗しました。ログインしているか確認してください。");
-            }
-        } catch (error) {
-            setSaveError("保存中にエラーが発生しました。");
-        } finally {
-            setIsSaving(false);
-        }
-    };
 
     return (
         <div className="w-full max-w-5xl space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -189,26 +205,10 @@ export default function MenuDisplay({ menu, dailyTarget }: MenuDisplayProps) {
                     <Sparkles className="w-5 h-5 text-yellow-500" />
                     AIが提案する献立
                 </h2>
-                <button
-                    onClick={handleSaveMenu}
-                    disabled={isSaving || saveSuccess}
-                    className={clsx(
-                        "flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm transition-all",
-                        saveSuccess
-                            ? "bg-pink-50 text-pink-600 border border-pink-200 shadow-inner cursor-default"
-                            : "bg-white text-zinc-700 border border-zinc-200 hover:border-pink-300 hover:text-pink-500 hover:shadow-md hover:-translate-y-0.5"
-                    )}
-                >
-                    <Heart className={clsx("w-4 h-4 transition-transform", saveSuccess ? "fill-pink-500 scale-110" : "scale-100 group-hover:scale-110")} />
-                    {isSaving ? "保存中..." : saveSuccess ? "お気に入りに保存しました" : "お気に入りに保存"}
-                </button>
-            </div>
-
-            {saveError && (
-                <div className="text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-100 flex items-center gap-2">
-                    <span className="font-bold">エラー:</span> {saveError}
+                <div className="text-sm text-zinc-500 bg-white px-4 py-2 rounded-xl border border-zinc-200">
+                    カード右上の <Heart className="w-4 h-4 inline-block text-pink-400 mx-1" /> を押して食事ごとに保存できます
                 </div>
-            )}
+            </div>
 
             {/* Day Tabs */}
             {isMultiDay && (
@@ -234,7 +234,7 @@ export default function MenuDisplay({ menu, dailyTarget }: MenuDisplayProps) {
             {/* Meals for selected day */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
                 {currentDay.meals && currentDay.meals.map((meal, index) => (
-                    <MealCard key={`${activeDay}-${index}`} meal={meal} />
+                    <MealCard key={`${activeDay}-${index}`} meal={meal} dayLabel={currentDay.dayLabel} />
                 ))}
             </div>
 

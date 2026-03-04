@@ -1,9 +1,9 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { MenuData, SavedMenu } from "@/types/menu";
+import { MealSaveData, SavedMeal } from "@/types/menu";
 
-export async function saveMenu(menuData: MenuData) {
+export async function saveMeal(mealData: MealSaveData) {
     const supabase = await createClient();
 
     const {
@@ -19,7 +19,7 @@ export async function saveMenu(menuData: MenuData) {
         .from("saved_menus")
         .insert({
             user_id: user.id,
-            menu_data: menuData,
+            menu_data: mealData,
         })
         .select()
         .single();
@@ -32,7 +32,7 @@ export async function saveMenu(menuData: MenuData) {
     return { success: true, data };
 }
 
-export async function getSavedMenus(): Promise<{ success: boolean; data?: SavedMenu[]; error?: string }> {
+export async function getSavedMeals(): Promise<{ success: boolean; data?: SavedMeal[]; error?: string }> {
     const supabase = await createClient();
 
     const {
@@ -54,18 +54,18 @@ export async function getSavedMenus(): Promise<{ success: boolean; data?: SavedM
         return { success: false, error: error.message };
     }
 
-    // Cast the jsonb menu_data to MenuData type
-    const parsedData: SavedMenu[] = data.map((item) => ({
+    // Cast the jsonb menu_data to MealSaveData type
+    const parsedData: SavedMeal[] = data.map((item) => ({
         id: item.id,
         user_id: item.user_id,
-        menu_data: item.menu_data as MenuData,
+        menu_data: item.menu_data as MealSaveData,
         created_at: item.created_at,
     }));
 
     return { success: true, data: parsedData };
 }
 
-export async function deleteSavedMenu(id: string) {
+export async function deleteSavedMeal(id: string) {
     const supabase = await createClient();
 
     const {
