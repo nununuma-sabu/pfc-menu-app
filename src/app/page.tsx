@@ -9,6 +9,7 @@ import { createClient } from "@/lib/supabase/client";
 import { User } from "@supabase/supabase-js";
 
 import { MenuData, GenerateMenuRequest, Nutrition } from "@/types/menu";
+import IngredientSearch from "@/components/ingredients/IngredientSearch";
 
 export default function Home() {
   const [showDisclaimer, setShowDisclaimer] = useState<boolean | null>(null);
@@ -125,6 +126,19 @@ export default function Home() {
         </div>
 
         <InputForm onSubmit={handleGenerateMenu} isLoading={loading} />
+
+        {/* Search Feature Testing */}
+        <section>
+          <h2 className="text-xl font-bold text-zinc-900 flex items-center gap-2 mb-6">
+            食材検索 (Test)
+          </h2>
+          <IngredientSearch />
+        </section>
+
+        {/* Records & Suggestions Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-24">
+          {/* Content for this grid would go here */}
+        </div>
 
         {error && (
           <div className="bg-red-50  text-red-600  px-4 py-3 rounded-lg border border-red-200 ">
