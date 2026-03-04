@@ -67,7 +67,12 @@ export async function searchIngredients(params: IngredientSearchParams): Promise
                 break;
         }
 
-        sbQuery = sbQuery.limit(limit);
+        // rel_desc の場合は多めに取得してメモリ上でソートする
+        if (sortBy === 'rel_desc') {
+            sbQuery = sbQuery.limit(100);
+        } else {
+            sbQuery = sbQuery.limit(limit);
+        }
 
         const { data, error } = await sbQuery;
 
@@ -76,7 +81,37 @@ export async function searchIngredients(params: IngredientSearchParams): Promise
             return { data: null, error: 'データベースの検索でエラーが発生しました。' };
         }
 
-        return { data: data as IngredientSearchResult[], error: null };
+        let sortedData = data as IngredientSearchResult[];
+
+        // 関連度ソートのロジック:
+        // 文字列長が短い (装飾語が少ない) 要素や、「生」「全卵」「赤肉」といったベースの食材を示すキーワードが含まれる要素を上位にする
+        if (sortBy === 'rel_desc' && sortedData.length > 0) {
+            const calculateScore = (name: string) => {
+                let score = name.length; // 文字が少ないほど優先（基本スコア）
+
+                // 元の検索クエリと完全一致なら超ボーナス
+                if (name === query) score -= 100;
+
+                // ベース食材の特徴となる単語があれば優先（スコアを下げる）
+                if (name.includes('生') || name.includes('水煮')) score -= 15;
+                if (name.includes('全卵')) score -= 10;
+                if (name.includes('皮なし') || name.includes('皮つき')) score -= 5;
+                if (name.includes('赤肉')) score -= 5;
+
+                // 加工品や調理済みのものはペナルティ（スコアを上げる）
+                if (name.includes('焼') || name.includes('フライ') || name.includes('天ぷら')) score += 20;
+                if (name.includes('乾燥') || name.includes('パウダー') || name.includes('缶')) score += 10;
+
+                return score;
+            };
+
+            sortedData.sort((a, b) => calculateScore(a.name) - calculateScore(b.name));
+
+            // limitに合わせてスライス
+            sortedData = sortedData.slice(0, limit);
+        }
+
+        return { data: sortedData, error: null };
     } catch (error) {
         console.error('Unexpected search error:', error);
         return { data: null, error: '予期せぬエラーが発生しました。' };
