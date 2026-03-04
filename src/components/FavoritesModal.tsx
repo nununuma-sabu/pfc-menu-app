@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { X, Utensils, Sunrise, Sun, Moon, Coffee, Trash2, Clock, CheckCircle2 } from "lucide-react";
+import { X } from "lucide-react";
 import { getSavedMeals } from "@/app/actions/favorites";
 import FavoritesClient from "@/components/FavoritesClient";
 import { SavedMeal } from "@/types/menu";
@@ -19,6 +19,7 @@ export default function FavoritesModal({ isOpen, onClose }: FavoritesModalProps)
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setMounted(true);
     }, []);
 

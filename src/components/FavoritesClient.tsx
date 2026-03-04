@@ -3,8 +3,7 @@
 import { useState } from "react";
 import { SavedMeal } from "@/types/menu";
 import { deleteSavedMeal } from "@/app/actions/favorites";
-import { HeartOff, Calendar, ChevronDown, ChevronUp, Trash2, Clock, CheckCircle2, Utensils, Sunrise, Sun, Moon, Coffee } from "lucide-react";
-import clsx from "clsx";
+import { HeartOff, Trash2, Clock, CheckCircle2, Utensils, Sunrise, Sun, Moon, Coffee } from "lucide-react";
 
 interface FavoritesClientProps {
     initialMeals: SavedMeal[];
@@ -55,7 +54,6 @@ export default function FavoritesClient({ initialMeals }: FavoritesClientProps) 
                 {meals.map((saved) => {
                     const { dayLabel, meal } = saved.menu_data;
                     const date = new Date(saved.created_at);
-                    const isDeletingThis = isDeleting === saved.id;
                     const { icon: Icon, color } = getMealStyle(meal.timeLabel);
 
                     return (

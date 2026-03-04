@@ -41,7 +41,7 @@ function MealCard({ meal, dayLabel }: { meal: Meal, dayLabel: string }) {
             } else {
                 alert(res.error || "保存に失敗しました。ログインしているか確認してください。");
             }
-        } catch (error) {
+        } catch {
             alert("保存中にエラーが発生しました。");
         } finally {
             setIsSaving(false);

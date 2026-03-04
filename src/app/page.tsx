@@ -6,6 +6,7 @@ import MenuDisplay from "@/components/MenuDisplay";
 import DisclaimerScreen from "@/components/DisclaimerScreen";
 import { Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { User } from "@supabase/supabase-js";
 
 import { MenuData, GenerateMenuRequest, Nutrition } from "@/types/menu";
 
@@ -21,7 +22,7 @@ export default function Home() {
     let mounted = true;
     const supabase = createClient();
 
-    const checkDisclaimer = async (user: any | null) => {
+    const checkDisclaimer = async (user: User | null) => {
       if (!mounted) return;
       if (user) {
         // ログインしている場合、セッションストレージを確認
