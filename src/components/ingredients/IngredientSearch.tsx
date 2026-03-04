@@ -46,13 +46,13 @@ export default function IngredientSearch() {
     return (
         <div className="w-full max-w-2xl mx-auto flex flex-col gap-4">
             {/* Search Bar */}
-            <div className="relative w-full shadow-sm rounded-xl overflow-hidden glassmorphism border border-white/20">
+            <div className="relative w-full shadow-sm rounded-xl overflow-hidden bg-white border border-zinc-200 focus-within:ring-2 focus-within:ring-emerald-500/50 focus-within:border-emerald-500 transition-all">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Search className="h-5 w-5 text-zinc-400" />
                 </div>
                 <input
                     type="text"
-                    className="block w-full pl-10 pr-3 py-3 border-none bg-transparent text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 sm:text-sm"
+                    className="block w-full pl-10 pr-3 py-3 border-none bg-transparent text-zinc-900 placeholder-zinc-400 focus:outline-none sm:text-sm"
                     placeholder="食品名で検索（例: 鶏胸肉、卵、白米）..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -73,7 +73,7 @@ export default function IngredientSearch() {
 
             {/* Results List */}
             {debouncedSearchTerm && !isSearching && results.length === 0 && !error && (
-                <div className="text-center py-8 text-zinc-400">
+                <div className="text-center py-8 text-zinc-500">
                     「{debouncedSearchTerm}」に一致する食品は見つかりませんでした。
                 </div>
             )}
@@ -82,11 +82,11 @@ export default function IngredientSearch() {
                 {results.map((item) => (
                     <div
                         key={item.id}
-                        className="flex flex-col sm:flex-row justify-between p-4 glassmorphism border border-white/10 rounded-xl hover:bg-white/5 transition-colors duration-200 group"
+                        className="flex flex-col sm:flex-row justify-between p-4 bg-white border border-zinc-200 rounded-xl hover:bg-zinc-50 shadow-sm transition-colors duration-200 group"
                     >
                         <div className="flex flex-col">
-                            <span className="font-semibold text-zinc-100">{item.name}</span>
-                            <span className="text-xs text-zinc-400 mt-1">カテゴリ: {item.category}</span>
+                            <span className="font-semibold text-zinc-900">{item.name}</span>
+                            <span className="text-xs text-zinc-500 mt-1">カテゴリ: {item.category}</span>
                         </div>
 
                         <div className="flex gap-4 mt-3 sm:mt-0 text-sm">
