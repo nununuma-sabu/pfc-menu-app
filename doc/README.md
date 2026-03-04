@@ -14,7 +14,7 @@ AI PFC Menu Generator の技術的な仕様・設計方針についてまとめ�
 | [security.md](./security.md) | セキュリティ設計（プロンプトインジェクション対策・構造化出力） |
 | [cost-estimation.md](./cost-estimation.md) | Gemini APIコスト試算・トークン実測データ・インフラ料金 |
 | [nutrition_theory.md](./nutrition_theory.md) | PFCバランス・TDEE計算などの基礎栄養理論 |
-| [master_schema_design.md](./master_schema_design.md) | 今後のマスタデータベース（文科省データ・JANコード連携）のスキーマ設計・拡張方針 |
+| [master_schema_design.md](./master_schema_design.md) | マスタデータベース（文科省標準成分表・JANコード連携）のスキーマ設計。2,635件投入済み |
 
 ---
 

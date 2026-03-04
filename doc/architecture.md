@@ -11,6 +11,7 @@ AI PFC Menu Generator の全体的なシステムアーキテクチャと、主�
 ```
 src/
  ├─ app/                 # Next.js App Routerのルーティングと各ページのレイアウト・ページコンポーネント
+ │   ├─ actions/         # Server Actions (食材検索等)
  │   ├─ api/             # バックエンド API Routes (例: /api/generate-menu)
  │   ├─ login/           # ログインページ
  │   ├─ signup/          # サインアップページ
@@ -18,12 +19,13 @@ src/
  │   ├─ page.tsx         # メインのアプリケーション（入力〜献立表示）
  │   └─ layout.tsx       # 全体レイアウト（認証状態に応じたヘッダー表示等）
  │
- ├─ components/          # 再利用可能な UI コンポーネント (InputForm, MenuDisplay など)
+ ├─ components/          # 再利用可能な UI コンポーネント (InputForm, MenuDisplay, IngredientSearch など)
  ├─ lib/                 # アプリケーション全体で使うユーティリティ・インフラ層
  │   ├─ supabase/        # Supabase クライアント実装 (Server, Client, Middleware 用)
+ │   ├─ searchUtils.ts   # 食材検索エンジン (テキスト正規化・同義語展開・クエリ分割)
  │   └─ env.ts           # 環境変数の検証ロジック
  │
- ├─ data/                # 静的データ (FAVORITE_RECIPES など)
+ ├─ data/                # 静的データ (FAVORITE_RECIPES, 同義語辞書JSON など)
  ├─ services/            # ドメインロジック（現時点では主に API 周り）
  ├─ types/               # TypeScript 型定義 (メニューの型など)
  └─ __tests__/           # 単体・結合テストの構成 (主に Vitestを使用)
