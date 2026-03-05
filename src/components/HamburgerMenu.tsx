@@ -20,7 +20,7 @@ export default function HamburgerMenu() {
             {/* オーバーレイ */}
             {isOpen && (
                 <div
-                    className="fixed inset-0 bg-black/50 z-[60] backdrop-blur-sm transition-opacity"
+                    className="fixed inset-0 bg-black/50 z-[90] backdrop-blur-sm transition-opacity"
                     onClick={() => setIsOpen(false)}
                     aria-hidden="true"
                 />
@@ -28,7 +28,7 @@ export default function HamburgerMenu() {
 
             {/* サイドメニュー */}
             <div
-                className={`fixed top-0 right-0 h-full w-64 bg-white dark:bg-zinc-900 border-l border-zinc-200 dark:border-zinc-800 z-[70] transform transition-transform duration-300 ease-in-out shadow-[0_0_25px_rgba(0,0,0,0.15)] dark:shadow-[0_0_25px_rgba(0,0,0,0.5)] ${isOpen ? "translate-x-0" : "translate-x-full"
+                className={`fixed top-0 right-0 h-full w-64 bg-white dark:bg-zinc-900 border-l border-zinc-200 dark:border-zinc-800 z-[100] transform transition-transform duration-300 ease-in-out shadow-[0_0_25px_rgba(0,0,0,0.15)] dark:shadow-[0_0_25px_rgba(0,0,0,0.5)] ${isOpen ? "translate-x-0" : "translate-x-full"
                     }`}
             >
                 <div className="p-4 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800">
