@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Heart } from "lucide-react";
 import LogoutButton from "./LogoutButton";
 import FavoritesModal from "./FavoritesModal";
+import HamburgerMenu from "./HamburgerMenu";
 
 export default function HeaderClientActions({ email }: { email: string | undefined }) {
     const [isFavoritesOpen, setIsFavoritesOpen] = useState(false);
@@ -27,6 +28,9 @@ export default function HeaderClientActions({ email }: { email: string | undefin
                 isOpen={isFavoritesOpen}
                 onClose={() => setIsFavoritesOpen(false)}
             />
+
+            <span className="text-gray-300 dark:text-gray-600">|</span>
+            <HamburgerMenu />
         </div>
     );
 }
