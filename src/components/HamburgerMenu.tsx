@@ -28,9 +28,8 @@ export default function HamburgerMenu() {
 
             {/* サイドメニュー */}
             <div
-                className={`fixed top-0 right-0 h-full w-64 bg-white dark:bg-gray-900 border-l border-zinc-200 dark:border-zinc-800 z-[70] transform transition-transform duration-300 ease-in-out shadow-2xl ${
-                    isOpen ? "translate-x-0" : "translate-x-full"
-                }`}
+                className={`fixed top-0 right-0 h-full w-64 bg-white dark:bg-gray-900 border-l border-zinc-200 dark:border-zinc-800 z-[70] transform transition-transform duration-300 ease-in-out shadow-2xl ${isOpen ? "translate-x-0" : "translate-x-full"
+                    }`}
             >
                 <div className="p-4 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800">
                     <h2 className="font-bold text-lg text-zinc-800 dark:text-zinc-200">メニュー</h2>
@@ -42,16 +41,16 @@ export default function HamburgerMenu() {
                         <X className="w-5 h-5" />
                     </button>
                 </div>
-                
+
                 <div className="p-4">
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-4 px-2">
+                    <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-4 px-4">
                         ※ メニュー内容は未定です
                     </p>
                     <ul className="space-y-1">
                         {/* 将来的にここに追加していく */}
                         <li>
-                            <Link 
-                                href="#" 
+                            <Link
+                                href="#"
                                 onClick={(e) => {
                                     e.preventDefault();
                                     // setIsOpen(false);
@@ -62,8 +61,8 @@ export default function HamburgerMenu() {
                             </Link>
                         </li>
                         <li>
-                            <Link 
-                                href="#" 
+                            <Link
+                                href="#"
                                 onClick={(e) => {
                                     e.preventDefault();
                                 }}
