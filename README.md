@@ -1,4 +1,5 @@
 # AI PFC Menu Generator
+デプロイ先：https://pfc-menu-app.vercel.app/
 
 「PFCバランスを合わせるのが面倒くさい...」
 「毎日何を食べるか考えるのが大変...」
