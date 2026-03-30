@@ -37,24 +37,29 @@ export async function POST(request: Request) {
     }
 
     // --- レートリミット (ユーザー単位) ---
+    // Upstash Redis が利用不可の場合でもAPI処理は続行する
     const rl = getRatelimit();
     if (rl) {
-      const { success, limit, reset } = await rl.limit(user.id);
-      if (!success) {
-        const retryAfterSec = Math.ceil((reset - Date.now()) / 1000);
-        return NextResponse.json(
-          {
-            error: `リクエストが多すぎます。約${retryAfterSec}秒後に再度お試しください。`,
-          },
-          {
-            status: 429,
-            headers: {
-              "X-RateLimit-Limit": limit.toString(),
-              "X-RateLimit-Remaining": "0",
-              "Retry-After": retryAfterSec.toString(),
+      try {
+        const { success, limit, reset } = await rl.limit(user.id);
+        if (!success) {
+          const retryAfterSec = Math.ceil((reset - Date.now()) / 1000);
+          return NextResponse.json(
+            {
+              error: `リクエストが多すぎます。約${retryAfterSec}秒後に再度お試しください。`,
             },
-          }
-        );
+            {
+              status: 429,
+              headers: {
+                "X-RateLimit-Limit": limit.toString(),
+                "X-RateLimit-Remaining": "0",
+                "Retry-After": retryAfterSec.toString(),
+              },
+            }
+          );
+        }
+      } catch (rlError) {
+        console.warn("Rate limiter unavailable, skipping:", rlError instanceof Error ? rlError.message : rlError);
       }
     }
 
