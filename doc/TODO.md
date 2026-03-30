@@ -12,6 +12,13 @@
 - [ ] Geminiプロンプトおよび出力スキーマの改修（マスタデータを活用した献立生成）
 
 ## バックエンド・インフラ
+- [x] **Upstash Redis障害によるAPI 500エラーの暫定修正**（2026-03-30）
+  - 原因: Upstash Redisの無料インスタンスが停止し、DNS解決失敗（`ENOTFOUND credible-midge-40428.upstash.io`）が発生。レートリミッターのエラーがAPI全体をクラッシュさせていた。
+  - 暫定修正: `route.ts` のレートリミットチェックを `try-catch` で囲み、Upstash障害時もメニュー生成を続行するように変更。
+- [ ] **Upstash Redisの恒久対応**（以下のいずれかを選択）
+  - 案A: [Upstashダッシュボード](https://console.upstash.com/)でRedisインスタンスの状態を確認し、復旧または新規作成 → Vercelの環境変数 `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` を更新
+  - 案B: レートリミット機能が不要なら、Vercelの環境変数から `UPSTASH_REDIS_REST_URL` と `UPSTASH_REDIS_REST_TOKEN` を削除（コード側は環境変数がなければスキップする設計になっている）
+  - 案C: 別のレートリミット手段（Vercel KV、Supabase等）への移行を検討
 - [ ] 本番デプロイ前にSupabase環境変数のモックフォールバック（`https://mock.supabase.co` など）を外す、または本番環境でのみエラーとするようにする。
   - 対象ファイル: `src/lib/supabase/client.ts`, `src/lib/supabase/server.ts`, `src/lib/supabase/middleware.ts`
 
