@@ -1,11 +1,15 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { generateMenuRequestSchema } from "./validation";
-import { generateMenu } from "@/services/geminiService";
+import { generateMenuStream } from "@/services/geminiService";
 import { createClient } from "@/lib/supabase/server";
 
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
+
+// Vercel Serverless Function のタイムアウト延長
+// Hobby: 最大60秒, Pro: 最大300秒
+export const maxDuration = 60;
 
 // ─────────────────────────────────────────────
 // Upstash Redis レートリミット設定
@@ -25,87 +29,111 @@ function getRatelimit(): Ratelimit | null {
   });
 }
 
+// ─────────────────────────────────────────────
+// NDJSON ストリーミング用ヘルパー型
+// ─────────────────────────────────────────────
+type StreamEvent =
+  | { type: "progress"; bytes: number }
+  | { type: "done"; data: unknown }
+  | { type: "error"; message: string };
+
 export async function POST(request: Request) {
-  try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+  // ─── 事前バリデーション (ストリーム開始前に完了) ───
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-    if (!user) {
-      return NextResponse.json({ error: "認証されていません。" }, { status: 401 });
-    }
+  if (!user) {
+    return NextResponse.json({ error: "認証されていません。" }, { status: 401 });
+  }
 
-    // --- レートリミット (ユーザー単位) ---
-    // Upstash Redis が利用不可の場合でもAPI処理は続行する
-    const rl = getRatelimit();
-    if (rl) {
-      try {
-        const { success, limit, reset } = await rl.limit(user.id);
-        if (!success) {
-          const retryAfterSec = Math.ceil((reset - Date.now()) / 1000);
-          return NextResponse.json(
-            {
-              error: `リクエストが多すぎます。約${retryAfterSec}秒後に再度お試しください。`,
+  // --- レートリミット (ユーザー単位) ---
+  // Upstash Redis が利用不可の場合でもAPI処理は続行する
+  const rl = getRatelimit();
+  if (rl) {
+    try {
+      const { success, limit, reset } = await rl.limit(user.id);
+      if (!success) {
+        const retryAfterSec = Math.ceil((reset - Date.now()) / 1000);
+        return NextResponse.json(
+          {
+            error: `リクエストが多すぎます。約${retryAfterSec}秒後に再度お試しください。`,
+          },
+          {
+            status: 429,
+            headers: {
+              "X-RateLimit-Limit": limit.toString(),
+              "X-RateLimit-Remaining": "0",
+              "Retry-After": retryAfterSec.toString(),
             },
-            {
-              status: 429,
-              headers: {
-                "X-RateLimit-Limit": limit.toString(),
-                "X-RateLimit-Remaining": "0",
-                "Retry-After": retryAfterSec.toString(),
-              },
-            }
-          );
-        }
-      } catch (rlError) {
-        console.warn("Rate limiter unavailable, skipping:", rlError instanceof Error ? rlError.message : rlError);
+          }
+        );
       }
+    } catch (rlError) {
+      console.warn("Rate limiter unavailable, skipping:", rlError instanceof Error ? rlError.message : rlError);
     }
+  }
 
-    const rawBody = await request.json();
-    const parseResult = generateMenuRequestSchema.safeParse(rawBody);
-
-    if (!parseResult.success) {
-      return NextResponse.json(
-        { error: "入力データが不正です。", details: z.flattenError(parseResult.error) },
-        { status: 400 }
-      );
-    }
-
-    // ドメインロジック（geminiService.ts）へ委譲
-    const menuData = await generateMenu(parseResult.data, user.id);
-
-    return NextResponse.json(menuData);
-  } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : "メニューの生成に失敗しました。";
-    console.error("Gemini API Error:", error);
-
-    // 429 (レート制限) の場合は専用メッセージと 429 ステータスを返す
-    if (
-      errorMessage.includes("サーバーが混み合っています") ||
-      errorMessage.includes("429") ||
-      errorMessage.includes("Too Many Requests") ||
-      errorMessage.includes("quota") ||
-      errorMessage.includes("RESOURCE_EXHAUSTED")
-    ) {
-      return NextResponse.json(
-        { error: errorMessage },
-        { status: 429 }
-      );
-    }
-
-    // ガード等でのエラー (目標カロリー違反など)
-    if (errorMessage.includes("固定メニューのカロリーが目標カロリー以上です")) {
-      return NextResponse.json(
-        { error: errorMessage },
-        { status: 400 }
-      );
-    }
-
+  let rawBody: unknown;
+  try {
+    rawBody = await request.json();
+  } catch {
     return NextResponse.json(
-      { error: "メニューの生成に失敗しました。", details: errorMessage },
-      { status: 500 }
+      { error: "リクエストボディの解析に失敗しました。" },
+      { status: 400 }
     );
   }
+
+  const parseResult = generateMenuRequestSchema.safeParse(rawBody);
+  if (!parseResult.success) {
+    return NextResponse.json(
+      { error: "入力データが不正です。", details: z.flattenError(parseResult.error) },
+      { status: 400 }
+    );
+  }
+
+  const validatedData = parseResult.data;
+  const userId = user.id;
+
+  // ─── NDJSON ストリーミングレスポンス ───
+  const encoder = new TextEncoder();
+
+  const stream = new ReadableStream({
+    async start(controller) {
+      /** NDJSON 形式で1行送信 */
+      const sendEvent = (event: StreamEvent) => {
+        controller.enqueue(encoder.encode(JSON.stringify(event) + "\n"));
+      };
+
+      try {
+        const menuData = await generateMenuStream(
+          validatedData,
+          userId,
+          (receivedBytes: number) => {
+            // チャンク受信ごとにプログレスイベントを送信
+            sendEvent({ type: "progress", bytes: receivedBytes });
+          }
+        );
+
+        // 後処理済みの最終結果を送信
+        sendEvent({ type: "done", data: menuData });
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : "メニューの生成に失敗しました。";
+        console.error("Gemini API Error:", error);
+        sendEvent({ type: "error", message: errorMessage });
+      } finally {
+        controller.close();
+      }
+    },
+  });
+
+  return new Response(stream, {
+    status: 200,
+    headers: {
+      "Content-Type": "application/x-ndjson; charset=utf-8",
+      "Cache-Control": "no-cache",
+      "Transfer-Encoding": "chunked",
+    },
+  });
 }

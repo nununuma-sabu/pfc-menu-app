@@ -29,10 +29,13 @@ vi.mock("@/services/geminiService", async (importOriginal) => {
     const actual = await importOriginal<typeof import("@/services/geminiService")>();
     return {
         ...actual,
-        generateMenu: vi.fn().mockResolvedValue({
-            menus: [],
-            shoppingList: [],
-            totals: { calories: 0, protein: 0, fat: 0, carbs: 0 }
+        generateMenuStream: vi.fn().mockImplementation(async (_params: unknown, _userId: string, onProgress: (bytes: number) => void) => {
+            onProgress(100);
+            return {
+                days: [],
+                shoppingList: [],
+                grandTotal: { calories: 0, p: 0, f: 0, c: 0 }
+            };
         }),
     };
 });
@@ -311,6 +314,14 @@ describe("POST /api/generate-menu", () => {
 
         expect(res.status).toBe(200);
         expect(mockLimit).toHaveBeenCalledWith("test-user-id");
+
+        // NDJSON ストリームを読み取り、done イベントが含まれることを確認
+        const text = await res.text();
+        const lines = text.trim().split("\n").filter(Boolean);
+        const events = lines.map(line => JSON.parse(line));
+        const doneEvent = events.find(e => e.type === "done");
+        expect(doneEvent).toBeDefined();
+        expect(doneEvent.data).toBeDefined();
     });
 
     it("未認証の場合は401ステータスを返す", async () => {

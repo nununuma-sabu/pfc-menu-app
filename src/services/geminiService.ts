@@ -254,6 +254,74 @@ export async function callGeminiWithRetry(
     throw lastError ?? new Error("Gemini API call failed after all retries");
 }
 
+/**
+ * Gemini API をストリーミングモードで呼び出し、チャンクごとに onProgress を呼ぶ。
+ * 全チャンク結合後に JSON パースし MenuData を返す。
+ * リトライ機構は callGeminiWithRetry と同等。
+ */
+export async function callGeminiWithStream(
+    model: GenerativeModel,
+    prompt: string,
+    userId: string,
+    onProgress: (receivedBytes: number) => void,
+    maxRetries: number = DEFAULT_MAX_RETRIES
+): Promise<MenuData> {
+    let lastError: Error | null = null;
+
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+        try {
+            const result = await model.generateContentStream(prompt);
+            let fullText = "";
+
+            for await (const chunk of result.stream) {
+                const text = chunk.text();
+                fullText += text;
+                onProgress(new TextEncoder().encode(fullText).byteLength);
+            }
+
+            // トークン使用量をログ出力 + DB記録
+            const response = await result.response;
+            const usage = response.usageMetadata;
+            if (usage) {
+                const input = usage.promptTokenCount ?? 0;
+                const output = usage.candidatesTokenCount ?? 0;
+                const total = usage.totalTokenCount ?? 0;
+                console.log(`[Gemini] Tokens — input: ${input}, output: ${output}, total: ${total}`);
+                await writeTokenLog(input, output, total, userId).catch((err) => {
+                    console.warn("[Gemini] Non-fatal error in writeTokenLog:", err);
+                });
+            }
+
+            console.log(`[Gemini] Stream attempt ${attempt + 1}: Received ${fullText.length} chars`);
+
+            const parsed: MenuData = JSON.parse(fullText);
+            return parsed;
+        } catch (error: unknown) {
+            lastError = error instanceof Error ? error : new Error(String(error));
+            console.warn(`[Gemini] Stream attempt ${attempt + 1}/${maxRetries} failed: ${lastError.message}`);
+
+            const isRateLimit =
+                lastError.message.includes("429") ||
+                lastError.message.includes("Too Many Requests") ||
+                lastError.message.includes("quota") ||
+                lastError.message.includes("RESOURCE_EXHAUSTED");
+
+            if (attempt < maxRetries - 1) {
+                const delay = isRateLimit
+                    ? BASE_DELAY_MS * Math.pow(2, attempt + 1)
+                    : BASE_DELAY_MS * Math.pow(2, attempt);
+
+                console.log(`[Gemini] Waiting ${delay}ms before next retry...`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+            } else if (isRateLimit) {
+                throw new Error("サーバーが混み合っており、時間を置いても解決しませんでした。約1分ほど待ってから再度お試しください。");
+            }
+        }
+    }
+
+    throw lastError ?? new Error("Gemini API call failed after all retries");
+}
+
 // ─────────────────────────────────────────────
 // プリセット定数
 // ─────────────────────────────────────────────
@@ -373,7 +441,66 @@ export function mergeShoppingList(
 // 献立生成のメインロジック
 // ─────────────────────────────────────────────
 
-export async function generateMenu(params: GenerateMenuParams, userId: string): Promise<MenuData> {
+/**
+ * 固定メニューの後処理: 挿入、日次合計再計算、買い物リスト合算、総合計再計算。
+ * generateMenu / generateMenuStream の両方から呼ばれる共通ロジック。
+ */
+function applyFixedMeals(
+    menuData: MenuData,
+    fixedMeals: GenerateMenuParams["fixedMeals"],
+    days: number
+): void {
+    if (fixedMeals.length === 0) return;
+
+    if (!menuData.shoppingList) menuData.shoppingList = [];
+
+    menuData.days.forEach((day) => {
+        const sortedFixedMeals = [...fixedMeals].sort((a, b) => a.mealIndex - b.mealIndex);
+        sortedFixedMeals.forEach(fm => {
+            let mealToInsert: Meal | null = null;
+            if (fm.recipeId === "protein-smoothie") {
+                mealToInsert = { ...PRESET_SMOOTHIE, timeLabel: `${fm.mealIndex + 1}食目（固定）` };
+            }
+
+            if (mealToInsert) {
+                day.meals.splice(fm.mealIndex, 0, mealToInsert);
+            }
+        });
+
+        // 1日の合計を再計算
+        day.total.calories = day.meals.reduce((sum, m) => sum + m.calories, 0);
+        day.total.p = day.meals.reduce((sum, m) => sum + m.p, 0);
+        day.total.f = day.meals.reduce((sum, m) => sum + m.f, 0);
+        day.total.c = day.meals.reduce((sum, m) => sum + m.c, 0);
+    });
+
+    // 買い物リストの合算
+    let fixedShoppingItems: ShoppingListItem[] = [];
+    fixedMeals.forEach(fm => {
+        if (fm.recipeId === "protein-smoothie") {
+            fixedShoppingItems = fixedShoppingItems.concat(PRESET_SMOOTHIE_SHOPPING);
+        }
+    });
+    if (fixedShoppingItems.length > 0) {
+        menuData.shoppingList = mergeShoppingList(
+            menuData.shoppingList!,
+            fixedShoppingItems,
+            days
+        );
+    }
+
+    // 総合計を再計算
+    menuData.grandTotal.calories = menuData.days.reduce((sum, d) => sum + d.total.calories, 0);
+    menuData.grandTotal.p = menuData.days.reduce((sum, d) => sum + d.total.p, 0);
+    menuData.grandTotal.f = menuData.days.reduce((sum, d) => sum + d.total.f, 0);
+    menuData.grandTotal.c = menuData.days.reduce((sum, d) => sum + d.total.c, 0);
+}
+
+/**
+ * Gemini モデル、プロンプト、固定メニュー情報を構築する共通関数。
+ * generateMenu / generateMenuStream の両方から呼ばれる。
+ */
+function buildMenuContext(params: GenerateMenuParams) {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
         throw new Error("Gemini API キーが設定されていません。.env.localを確認してください。");
@@ -462,54 +589,40 @@ ${mealCount <= 3
         }
 ※ shoppingList にはAIが提案した分のみを含めてください（固定メニュー分はこちらで合算します）。`;
 
+    return { model, prompt, fixedMeals, days };
+}
+
+export async function generateMenu(params: GenerateMenuParams, userId: string): Promise<MenuData> {
+    const { model, prompt, fixedMeals, days } = buildMenuContext(params);
+
     // リトライ付きでGemini API呼び出し
     const menuData = await callGeminiWithRetry(model, prompt, userId);
 
-    // 固定メニューの挿入と買い物リストの合算
-    if (fixedMeals.length > 0) {
-        if (!menuData.shoppingList) menuData.shoppingList = [];
-
-        menuData.days.forEach((day) => {
-            const sortedFixedMeals = [...fixedMeals].sort((a, b) => a.mealIndex - b.mealIndex);
-            sortedFixedMeals.forEach(fm => {
-                let mealToInsert: Meal | null = null;
-                if (fm.recipeId === "protein-smoothie") {
-                    mealToInsert = { ...PRESET_SMOOTHIE, timeLabel: `${fm.mealIndex + 1}食目（固定）` };
-                }
-
-                if (mealToInsert) {
-                    day.meals.splice(fm.mealIndex, 0, mealToInsert);
-                }
-            });
-
-            // 1日の合計を再計算
-            day.total.calories = day.meals.reduce((sum, m) => sum + m.calories, 0);
-            day.total.p = day.meals.reduce((sum, m) => sum + m.p, 0);
-            day.total.f = day.meals.reduce((sum, m) => sum + m.f, 0);
-            day.total.c = day.meals.reduce((sum, m) => sum + m.c, 0);
-        });
-
-        // 買い物リストの合算
-        let fixedShoppingItems: ShoppingListItem[] = [];
-        fixedMeals.forEach(fm => {
-            if (fm.recipeId === "protein-smoothie") {
-                fixedShoppingItems = fixedShoppingItems.concat(PRESET_SMOOTHIE_SHOPPING);
-            }
-        });
-        if (fixedShoppingItems.length > 0) {
-            menuData.shoppingList = mergeShoppingList(
-                menuData.shoppingList!,
-                fixedShoppingItems,
-                days
-            );
-        }
-
-        // 総合計を再計算
-        menuData.grandTotal.calories = menuData.days.reduce((sum, d) => sum + d.total.calories, 0);
-        menuData.grandTotal.p = menuData.days.reduce((sum, d) => sum + d.total.p, 0);
-        menuData.grandTotal.f = menuData.days.reduce((sum, d) => sum + d.total.f, 0);
-        menuData.grandTotal.c = menuData.days.reduce((sum, d) => sum + d.total.c, 0);
-    }
+    // 固定メニューの後処理
+    applyFixedMeals(menuData, fixedMeals, days);
 
     return menuData;
 }
+
+/**
+ * ストリーミング版の献立生成。
+ * Gemini の generateContentStream を使い、チャンクごとに onProgress で通知。
+ * 全チャンク受信後に後処理（固定メニュー挿入・買い物リスト合算）を行い、
+ * 完成した MenuData を返す。
+ */
+export async function generateMenuStream(
+    params: GenerateMenuParams,
+    userId: string,
+    onProgress: (receivedBytes: number) => void
+): Promise<MenuData> {
+    const { model, prompt, fixedMeals, days } = buildMenuContext(params);
+
+    // ストリーミング付きでGemini API呼び出し
+    const menuData = await callGeminiWithStream(model, prompt, userId, onProgress);
+
+    // 固定メニューの後処理
+    applyFixedMeals(menuData, fixedMeals, days);
+
+    return menuData;
+}
+

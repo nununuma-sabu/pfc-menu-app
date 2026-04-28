@@ -64,11 +64,16 @@ export default function Home() {
     setShowDisclaimer(false);
   };
 
+  // ストリーミング進捗表示用 (受信バイト数)
+  const [streamProgress, setStreamProgress] = useState<number | null>(null);
+
   const handleGenerateMenu = async (data: GenerateMenuRequest) => {
     setMenu(null);
     setDailyTarget(null);
     setLoading(true);
     setError(null);
+    setStreamProgress(null);
+
     try {
       const res = await fetch("/api/generate-menu", {
         method: "POST",
@@ -78,25 +83,86 @@ export default function Home() {
         body: JSON.stringify(data),
       });
 
+      // バリデーション / 認証 / レートリミット等のエラーは
+      // ストリーム開始前に通常の JSON で返される
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.error || "Failed to generate menu");
       }
 
-      const result: MenuData = await res.json();
-      setMenu(result);
+      // NDJSON ストリームの読み取り
+      const reader = res.body!.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
 
-      // フォームの calories/p/f/c はすでに1日あたりの値
-      setDailyTarget({
-        calories: data.calories,
-        p: data.p,
-        f: data.f,
-        c: data.c,
-      });
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+
+        // 改行区切りで行を処理
+        const lines = buffer.split("\n");
+        // 最後の要素は不完全な可能性があるため保持
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed) continue;
+
+          try {
+            const event = JSON.parse(trimmed);
+
+            if (event.type === "progress") {
+              setStreamProgress(event.bytes);
+            } else if (event.type === "done") {
+              const result: MenuData = event.data;
+              setMenu(result);
+              setDailyTarget({
+                calories: data.calories,
+                p: data.p,
+                f: data.f,
+                c: data.c,
+              });
+            } else if (event.type === "error") {
+              throw new Error(event.message);
+            }
+          } catch (parseError) {
+            // JSON パースエラー → エラーイベントかもしれないので再throw
+            if (parseError instanceof Error && parseError.message !== trimmed) {
+              throw parseError;
+            }
+          }
+        }
+      }
+
+      // バッファに残ったデータを処理
+      if (buffer.trim()) {
+        try {
+          const event = JSON.parse(buffer.trim());
+          if (event.type === "done") {
+            const result: MenuData = event.data;
+            setMenu(result);
+            setDailyTarget({
+              calories: data.calories,
+              p: data.p,
+              f: data.f,
+              c: data.c,
+            });
+          } else if (event.type === "error") {
+            throw new Error(event.message);
+          }
+        } catch (parseError) {
+          if (parseError instanceof Error && parseError.message !== buffer.trim()) {
+            throw parseError;
+          }
+        }
+      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "メニューの生成に失敗しました。");
     } finally {
       setLoading(false);
+      setStreamProgress(null);
     }
   };
 
@@ -126,6 +192,26 @@ export default function Home() {
         </div>
 
         <InputForm onSubmit={handleGenerateMenu} isLoading={loading} />
+
+        {/* ストリーミング進捗表示 */}
+        {loading && streamProgress !== null && (
+          <div className="w-full max-w-md space-y-2">
+            <div className="flex items-center gap-3 px-1">
+              <div className="relative w-full h-2 bg-zinc-200 rounded-full overflow-hidden">
+                <div
+                  className="absolute inset-y-0 left-0 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full animate-pulse"
+                  style={{ width: `${Math.min(100, (streamProgress / 30000) * 100)}%` }}
+                />
+              </div>
+              <span className="text-xs font-mono text-zinc-500 whitespace-nowrap">
+                {(streamProgress / 1024).toFixed(1)} KB
+              </span>
+            </div>
+            <p className="text-xs text-zinc-500 text-center">
+              🍳 献立データを受信中...
+            </p>
+          </div>
+        )}
 
         {/* Search Feature Testing */}
         <section>
