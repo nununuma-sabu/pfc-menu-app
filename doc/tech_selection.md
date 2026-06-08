@@ -24,7 +24,7 @@
 
 ## 3. バックエンド・AI連携
 
-### Google Gemini API (Gemini 2.0 Flash)
+### Google Gemini API (Gemini 3.5 Flash)
 * **選定理由**:
   * **コストパフォーマンス**: 非常に安価（あるいは無料枠）で高速な応答が可能であり、個人開発のツールとして最適な選択肢。
   * **Structured Outputsの強力なサポート**: `responseSchema` を指定することで、確実に安定したJSON出力を得ることができ、フロントエンドでのパースエラーを防げる。

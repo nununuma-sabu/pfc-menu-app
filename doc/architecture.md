@@ -62,5 +62,5 @@ Next.js App Routerの設計（SSR・RSCとクライアントコンポーネン�
 1. **[Client] InputForm**: ユーザーが設定内容を入力。フロントエンド側で基本的なバリデーション（`validation.md`参照）を実施し、API `/api/generate-menu` をコールする。
 2. **[Middleware] Rate Limiter**: `/api/generate-menu` に対するリクエストを Upstash Redis を用いてレート制限確認。制限超過時は 429 エラーを即返却する。（DoS・過剰なAPI課金対策）
 3. **[Server API] route.ts**: 受け取ったリクエストデータを Zod (`src/lib/validation.ts`) で検証。さらにプロンプトインジェクション対策のサニタイズ（`security.md`を参照）を実施する。
-4. **[External] Gemini API**: 構成されたプロンプトと `responseSchema` を用いて、Gemini 2.0 Flash にリクエストを送り、構造化出力 (JSON) で献立データを受け取る。
+4. **[External] Gemini API**: 構成されたプロンプトと `responseSchema` を用いて、Gemini 3.5 Flash にリクエストを送り、構造化出力 (JSON) で献立データを受け取る。
 5. **[Client] MenuDisplay**: クライアントに返却された JSON データを、React コンポーネントおよびグラフ (`PfcComparisonChart` 等) として描画する。
