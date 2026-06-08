@@ -46,6 +46,15 @@ describe("PfcComparisonChart", () => {
         expect(container.textContent).toContain("%");
     });
 
+    it("差分は小数点1桁までに丸めて表示される", () => {
+        const actual: Nutrition = { calories: 2001.1, p: 76.1, f: 56, c: 300 };
+        const { container } = render(<PfcComparisonChart target={target} actual={actual} />);
+
+        expect(container.textContent).toContain("+1.1kcal");
+        expect(container.textContent).toContain("+1.1g");
+        expect(container.textContent).not.toContain("1.099999999");
+    });
+
     it("target.calories=0 でもクラッシュしない（ゼロ除算ガード）", () => {
         const zeroTarget: Nutrition = { calories: 0, p: 0, f: 0, c: 0 };
         const actual: Nutrition = { calories: 2000, p: 75, f: 56, c: 300 };

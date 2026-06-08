@@ -18,6 +18,14 @@ function calcPercent(actual: number, target: number): number {
     return Math.round((actual / target) * 100);
 }
 
+function formatDiff(value: number): string {
+    const rounded = Math.round(value * 10) / 10;
+    const normalized = Object.is(rounded, -0) ? 0 : rounded;
+    return new Intl.NumberFormat("ja-JP", {
+        maximumFractionDigits: 1,
+    }).format(normalized);
+}
+
 function getStatusStyle(pct: number) {
     if (pct >= 90 && pct <= 110) return { bar: "#22c55e", text: "text-green-600", label: "適正", badge: "bg-green-100 text-green-700" };
     if (pct < 90) return { bar: "#f59e0b", text: "text-amber-600", label: "不足", badge: "bg-amber-100 text-amber-700" };
@@ -49,7 +57,7 @@ function CalorieBar({ target, actual }: { target: number; actual: number }) {
                     <span className={`font-bold ${st.text}`}>
                         提案 {actual}kcal
                         <span className="ml-1 font-normal text-zinc-400">
-                            ({diff >= 0 ? "+" : ""}{diff}kcal / {pct}%)
+                            ({diff >= 0 ? "+" : ""}{formatDiff(diff)}kcal / {pct}%)
                         </span>
                     </span>
                 </span>
@@ -195,7 +203,7 @@ function RadarChart({ target, actual }: { target: Nutrition; actual: Nutrition }
                                     <span className={`font-bold ${st.text}`}>
                                         提案{aVal}{a.unit}
                                         <span className="ml-1 font-normal text-zinc-400">
-                                            ({diff >= 0 ? "+" : ""}{diff}{a.unit} / {pct}%)
+                                            ({diff >= 0 ? "+" : ""}{formatDiff(diff)}{a.unit} / {pct}%)
                                         </span>
                                     </span>
                                 </span>
