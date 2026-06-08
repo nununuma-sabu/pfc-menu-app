@@ -27,9 +27,9 @@ function formatDiff(value: number): string {
 }
 
 function getStatusStyle(pct: number) {
-    if (pct >= 90 && pct <= 110) return { bar: "#22c55e", text: "text-green-600", label: "適正", badge: "bg-green-100 text-green-700" };
-    if (pct < 90) return { bar: "#f59e0b", text: "text-amber-600", label: "不足", badge: "bg-amber-100 text-amber-700" };
-    return { bar: "#ef4444", text: "text-red-600", label: "超過", badge: "bg-red-100   text-red-700" };
+    if (pct >= 90 && pct <= 110) return { bar: "#006c4c", text: "text-emerald-700", label: "適正", badge: "bg-emerald-100 text-emerald-800" };
+    if (pct < 90) return { bar: "#b26a00", text: "text-amber-700", label: "不足", badge: "bg-amber-100 text-amber-800" };
+    return { bar: "#ba1a1a", text: "text-red-700", label: "超過", badge: "bg-red-100 text-red-800" };
 }
 
 function CalorieBar({ target, actual }: { target: number; actual: number }) {
@@ -41,8 +41,8 @@ function CalorieBar({ target, actual }: { target: number; actual: number }) {
     return (
         <div className="space-y-1">
             <div className="text-xs font-semibold text-zinc-600 mb-1">カロリー</div>
-            <div className="relative h-5 bg-zinc-100 rounded-full overflow-hidden">
-                <div className="absolute top-0 bottom-0 w-px bg-zinc-400 z-10" style={{ left: `${(100 / 130) * 100}%` }} />
+            <div className="relative h-5 rounded-full overflow-hidden" style={{ background: "var(--md-surface-container-high)" }}>
+                <div className="absolute top-0 bottom-0 w-px z-10" style={{ left: `${(100 / 130) * 100}%`, background: "var(--md-outline)" }} />
                 <div
                     className="absolute top-0 left-0 h-full rounded-full transition-all duration-700"
                     style={{ width: `${(clampedPct / 130) * 100}%`, backgroundColor: st.bar, opacity: 0.85 }}
@@ -120,7 +120,7 @@ function RadarChart({ target, actual }: { target: Nutrition; actual: Nutrition }
                             key={i}
                             points={pts}
                             fill="none"
-                            stroke={i === 3 ? "#a1a1aa" : "#e4e4e7"}
+                            stroke={i === 3 ? "#707973" : "#c0c9c2"}
                             strokeWidth={i === 3 ? 1.5 : 0.75}
                         />
                     ))}
@@ -128,15 +128,15 @@ function RadarChart({ target, actual }: { target: Nutrition; actual: Nutrition }
                     {/* 軸線 */}
                     {AXES.map(a => {
                         const pt = getPoint(a.angle, 1);
-                        return <line key={a.key} x1={CX} y1={CY} x2={pt.x} y2={pt.y} stroke="#d4d4d8" strokeWidth="0.75" />;
+                        return <line key={a.key} x1={CX} y1={CY} x2={pt.x} y2={pt.y} stroke="#c0c9c2" strokeWidth="0.75" />;
                     })}
 
                     {/* 目標三角形（塗り・実線） */}
                     <polygon
                         points={targetPolygon}
-                        fill="#6366f1"
+                        fill="#006c4c"
                         fillOpacity="0.12"
-                        stroke="#6366f1"
+                        stroke="#006c4c"
                         strokeWidth="2.5"
                         strokeLinejoin="round"
                     />
@@ -144,9 +144,9 @@ function RadarChart({ target, actual }: { target: Nutrition; actual: Nutrition }
                     {/* 提案三角形（塗り・破線） */}
                     <polygon
                         points={actualPolygon}
-                        fill="#f43f5e"
+                        fill="#3d6374"
                         fillOpacity="0.18"
-                        stroke="#f43f5e"
+                        stroke="#3d6374"
                         strokeWidth="2.5"
                         strokeLinejoin="round"
                         strokeDasharray="5,3"
@@ -174,11 +174,11 @@ function RadarChart({ target, actual }: { target: Nutrition; actual: Nutrition }
                 {/* 凡例 */}
                 <div className="flex gap-5 text-[11px] text-zinc-500 -mt-1 mb-2">
                     <span className="flex items-center gap-1.5">
-                        <span className="inline-block w-5 h-0 border-t-2 border-indigo-500" />
+                        <span className="inline-block w-5 h-0 border-t-2 border-emerald-700" />
                         目標
                     </span>
                     <span className="flex items-center gap-1.5">
-                        <span className="inline-block w-5 h-0 border-t-2 border-rose-500 border-dashed" style={{ borderStyle: "dashed" }} />
+                        <span className="inline-block w-5 h-0 border-t-2 border-sky-700 border-dashed" style={{ borderStyle: "dashed" }} />
                         提案
                     </span>
                 </div>
@@ -192,7 +192,7 @@ function RadarChart({ target, actual }: { target: Nutrition; actual: Nutrition }
                         const pct = calcPercent(aVal, tVal);
                         const st = getStatusStyle(pct);
                         return (
-                            <div key={a.key} className="flex items-center justify-between px-2 py-1.5 bg-zinc-50 rounded-lg">
+                            <div key={a.key} className="flex items-center justify-between px-2 py-1.5 md-card-tonal">
                                 <span className="flex items-center gap-1.5">
                                     <span className="font-extrabold text-[11px]" style={{ color: a.color }}>{a.shortLabel}</span>
                                     <span className="text-zinc-500">{a.longLabel}</span>
@@ -220,15 +220,15 @@ function RadarChart({ target, actual }: { target: Nutrition; actual: Nutrition }
 
 export default function PfcComparisonChart({ target, actual, label }: PfcComparisonChartProps) {
     return (
-        <div className="bg-white rounded-xl shadow-md border border-zinc-100 p-5 space-y-5">
-            <h3 className="font-bold text-zinc-700 text-sm flex items-center gap-2">
-                <span className="inline-block w-2 h-2 rounded-full bg-indigo-400" />
+        <div className="md-card p-5 space-y-5">
+            <h3 className="font-bold text-sm flex items-center gap-2" style={{ color: "var(--md-on-surface)" }}>
+                <span className="inline-block w-2 h-2 rounded-full" style={{ background: "var(--md-primary)" }} />
                 {label ?? "栄養バランス達成度"}
             </h3>
 
             <CalorieBar target={target.calories} actual={actual.calories} />
 
-            <hr className="border-zinc-100" />
+            <hr style={{ borderColor: "var(--md-outline-variant)" }} />
 
             <RadarChart target={target} actual={actual} />
         </div>

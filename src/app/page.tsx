@@ -168,7 +168,7 @@ export default function Home() {
 
   if (showDisclaimer === null) {
     // 判定中は何も表示しない（チラつき防止）
-    return <main className="min-h-screen bg-slate-50 py-12 px-4 sm:px-8 font-sans" />;
+    return <main className="min-h-screen md-surface py-12 px-4 sm:px-8 font-sans" />;
   }
 
   if (showDisclaimer) {
@@ -176,17 +176,17 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50  py-12 px-4 sm:px-8 font-sans">
+    <main className="min-h-screen md-surface py-10 px-4 sm:px-8 font-sans">
       <div className="max-w-5xl mx-auto flex flex-col items-center gap-10">
         <div className="text-center space-y-4">
-          <div className="inline-flex items-center gap-2 bg-blue-100  text-blue-700  px-4 py-1.5 rounded-full text-sm font-medium">
+          <div className="inline-flex items-center gap-2 md-chip px-4 py-1.5 text-sm font-medium">
             <Sparkles className="w-4 h-4" />
             AI Powered
           </div>
-          <h1 className="text-4xl md:text-5xl font-extrabold text-zinc-900  tracking-tight">
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight" style={{ color: "var(--md-on-surface)" }}>
             PFC Balancer
           </h1>
-          <p className="text-lg text-zinc-600  max-w-lg">
+          <p className="text-lg max-w-lg" style={{ color: "var(--md-on-surface-variant)" }}>
             あなたの目標に合わせて、最適な献立をAIがまとめて提案します。
           </p>
         </div>
@@ -197,17 +197,17 @@ export default function Home() {
         {loading && streamProgress !== null && (
           <div className="w-full max-w-md space-y-2">
             <div className="flex items-center gap-3 px-1">
-              <div className="relative w-full h-2 bg-zinc-200 rounded-full overflow-hidden">
+              <div className="relative w-full h-2 rounded-full overflow-hidden" style={{ background: "var(--md-surface-container-high)" }}>
                 <div
-                  className="absolute inset-y-0 left-0 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full animate-pulse"
-                  style={{ width: `${Math.min(100, (streamProgress / 30000) * 100)}%` }}
+                  className="absolute inset-y-0 left-0 rounded-full animate-pulse"
+                  style={{ width: `${Math.min(100, (streamProgress / 30000) * 100)}%`, background: "var(--md-primary)" }}
                 />
               </div>
-              <span className="text-xs font-mono text-zinc-500 whitespace-nowrap">
+              <span className="text-xs font-mono whitespace-nowrap" style={{ color: "var(--md-on-surface-variant)" }}>
                 {(streamProgress / 1024).toFixed(1)} KB
               </span>
             </div>
-            <p className="text-xs text-zinc-500 text-center">
+            <p className="text-xs text-center" style={{ color: "var(--md-on-surface-variant)" }}>
               🍳 献立データを受信中...
             </p>
           </div>
@@ -215,7 +215,7 @@ export default function Home() {
 
         {/* Search Feature Testing */}
         <section>
-          <h2 className="text-xl font-bold text-zinc-900 flex items-center gap-2 mb-6">
+          <h2 className="text-xl font-bold flex items-center gap-2 mb-6" style={{ color: "var(--md-on-surface)" }}>
             食材検索 (Test)
           </h2>
           <IngredientSearch />
@@ -227,7 +227,7 @@ export default function Home() {
         </div>
 
         {error && (
-          <div className="bg-red-50  text-red-600  px-4 py-3 rounded-lg border border-red-200 ">
+          <div className="px-4 py-3 rounded-lg border" style={{ background: "var(--md-error-container)", color: "var(--md-error)", borderColor: "#ffb4ab" }}>
             {error}
           </div>
         )}

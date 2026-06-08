@@ -46,7 +46,7 @@ export default function IngredientSearch() {
     return (
         <div className="w-full max-w-2xl mx-auto flex flex-col gap-4">
             {/* Search Bar */}
-            <div className="relative w-full shadow-sm rounded-xl overflow-hidden bg-white border border-zinc-200 focus-within:ring-2 focus-within:ring-emerald-500/50 focus-within:border-emerald-500 transition-all">
+            <div className="relative w-full md-card overflow-hidden focus-within:ring-2 focus-within:ring-emerald-700/20 focus-within:border-emerald-700 transition-all">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Search className="h-5 w-5 text-zinc-400" />
                 </div>
@@ -59,14 +59,14 @@ export default function IngredientSearch() {
                 />
                 {isSearching && (
                     <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                        <Loader2 className="h-5 w-5 animate-spin text-emerald-400" />
+                        <Loader2 className="h-5 w-5 animate-spin text-emerald-700" />
                     </div>
                 )}
             </div>
 
             {/* Error Message */}
             {error && (
-                <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-500 rounded-lg text-sm">
+                <div className="p-3 rounded-lg border text-sm" style={{ background: "var(--md-error-container)", borderColor: "#ffb4ab", color: "var(--md-error)" }}>
                     {error}
                 </div>
             )}
@@ -82,7 +82,7 @@ export default function IngredientSearch() {
                 {results.map((item) => (
                     <div
                         key={item.id}
-                        className="flex flex-col sm:flex-row justify-between p-4 bg-white border border-zinc-200 rounded-xl hover:bg-zinc-50 shadow-sm transition-colors duration-200 group"
+                        className="flex flex-col sm:flex-row justify-between p-4 md-card md-elevation-hover transition-colors duration-200 group"
                     >
                         <div className="flex flex-col">
                             <span className="font-semibold text-zinc-900">{item.name}</span>

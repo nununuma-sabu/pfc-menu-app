@@ -13,13 +13,14 @@ export default function HeaderClientActions({ email }: { email: string | undefin
         <div className="flex items-center gap-4">
             <button
                 onClick={() => setIsFavoritesOpen(true)}
-                className="flex items-center gap-1.5 text-zinc-600 dark:text-zinc-300 hover:text-indigo-600 transition-colors font-semibold"
+                className="flex items-center gap-1.5 transition-colors font-semibold hover:opacity-80"
+                style={{ color: "var(--md-on-surface-variant)" }}
             >
                 <Heart className="w-4 h-4" />
                 <span className="hidden sm:inline">お気に入り</span>
             </button>
-            <span className="text-gray-300 dark:text-gray-600">|</span>
-            <span className="text-gray-600 dark:text-gray-300 hidden md:inline-block">
+            <span className="text-gray-300">|</span>
+            <span className="hidden md:inline-block" style={{ color: "var(--md-on-surface-variant)" }}>
                 {email}
             </span>
             <LogoutButton />
@@ -29,7 +30,7 @@ export default function HeaderClientActions({ email }: { email: string | undefin
                 onClose={() => setIsFavoritesOpen(false)}
             />
 
-            <span className="text-gray-300 dark:text-gray-600">|</span>
+            <span className="text-gray-300">|</span>
             <HamburgerMenu />
         </div>
     );

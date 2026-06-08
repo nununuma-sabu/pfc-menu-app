@@ -101,14 +101,14 @@ export default function TdeeModal({ onApply, onClose }: TdeeModalProps) {
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
             onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
         >
-            <div className="w-full max-w-md bg-white  rounded-2xl shadow-2xl border border-zinc-200  overflow-hidden">
+            <div className="w-full max-w-md md-card overflow-hidden">
                 {/* Header */}
-                <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-200  bg-zinc-50 ">
+                <div className="flex items-center justify-between px-5 py-4 border-b" style={{ background: "var(--md-surface-container-low)", borderColor: "var(--md-outline-variant)" }}>
                     <div className="flex items-center gap-2">
-                        <Calculator className="w-5 h-5 text-indigo-600 " />
-                        <h2 className="text-lg font-bold text-zinc-800 ">TDEE 自動計算</h2>
+                        <Calculator className="w-5 h-5" style={{ color: "var(--md-primary)" }} />
+                        <h2 className="text-lg font-bold" style={{ color: "var(--md-on-surface)" }}>TDEE 自動計算</h2>
                     </div>
-                    <button onClick={onClose} className="p-1 rounded-md hover:bg-zinc-200  transition-colors">
+                    <button onClick={onClose} className="p-2 rounded-full hover:bg-emerald-50 transition-colors">
                         <X className="w-5 h-5 text-zinc-500" />
                     </button>
                 </div>
@@ -116,13 +116,13 @@ export default function TdeeModal({ onApply, onClose }: TdeeModalProps) {
                 {/* Body */}
                 <div className="px-5 py-4 space-y-4 max-h-[80vh] overflow-y-auto custom-scrollbar">
                     {/* Mode Switcher */}
-                    <div className="flex p-1 bg-zinc-100  rounded-xl border border-zinc-200 ">
+                    <div className="flex p-1 md-card-tonal">
                         <button
                             onClick={() => setIsManualBmr(false)}
                             className={clsx(
                                 "flex-1 py-1.5 text-xs font-bold rounded-lg transition-all",
                                 !isManualBmr
-                                    ? "bg-white  text-indigo-600  shadow-sm"
+                                    ? "bg-white text-emerald-800 shadow-sm"
                                     : "text-zinc-500 hover:text-zinc-700 "
                             )}
                         >
@@ -133,7 +133,7 @@ export default function TdeeModal({ onApply, onClose }: TdeeModalProps) {
                             className={clsx(
                                 "flex-1 py-1.5 text-xs font-bold rounded-lg transition-all",
                                 isManualBmr
-                                    ? "bg-white  text-indigo-600  shadow-sm"
+                                    ? "bg-white text-emerald-800 shadow-sm"
                                     : "text-zinc-500 hover:text-zinc-700 "
                             )}
                         >
@@ -155,7 +155,7 @@ export default function TdeeModal({ onApply, onClose }: TdeeModalProps) {
                                 onKeyDown={handleKeyDown}
                                 onChange={(e) => setWeight(e.target.value)}
                                 placeholder="65"
-                                className="w-full p-2.5 text-sm border border-zinc-300  rounded-lg bg-white  focus:ring-2 focus:ring-indigo-500"
+                                className="w-full md-field p-2.5 text-sm"
                                 autoFocus
                             />
                         </div>
@@ -168,7 +168,7 @@ export default function TdeeModal({ onApply, onClose }: TdeeModalProps) {
                                     onKeyDown={handleKeyDown}
                                     onChange={(e) => setManualBmr(e.target.value)}
                                     placeholder="1500"
-                                    className="w-full p-2.5 text-sm border border-zinc-300  rounded-lg bg-white  focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full md-field p-2.5 text-sm"
                                 />
                             </div>
                         ) : (
@@ -180,7 +180,7 @@ export default function TdeeModal({ onApply, onClose }: TdeeModalProps) {
                                     onKeyDown={handleKeyDown}
                                     onChange={(e) => setBodyFat(e.target.value)}
                                     placeholder="20"
-                                    className="w-full p-2.5 text-sm border border-zinc-300  rounded-lg bg-white  focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full md-field p-2.5 text-sm"
                                 />
                             </div>
                         )}
@@ -196,10 +196,10 @@ export default function TdeeModal({ onApply, onClose }: TdeeModalProps) {
                                     type="button"
                                     onClick={() => setActivityIndex(i)}
                                     className={clsx(
-                                        "py-2 px-1 rounded-lg text-center transition-all border",
+                                        "py-2 px-1 rounded-full text-center transition-all border",
                                         activityIndex === i
-                                            ? "bg-indigo-600 text-white border-indigo-600 shadow-md"
-                                            : "bg-white  text-zinc-600  border-zinc-200  hover:bg-zinc-50 "
+                                            ? "md-button-filled border-transparent"
+                                            : "md-button-outlined"
                                     )}
                                 >
                                     <div className="text-[11px] font-bold leading-tight">{level.label}</div>
@@ -210,7 +210,7 @@ export default function TdeeModal({ onApply, onClose }: TdeeModalProps) {
                     </div>
 
                     {/* Calorie Adjustment */}
-                    <div className="p-3 bg-zinc-50  rounded-xl border border-zinc-200 ">
+                    <div className="p-3 md-card-tonal">
                         <div className="flex items-center justify-between mb-2">
                             <label className="text-xs font-bold text-zinc-700 ">
                                 目標設定（調整幅 kcal）
@@ -230,7 +230,7 @@ export default function TdeeModal({ onApply, onClose }: TdeeModalProps) {
                                     }
                                 }}
                                 placeholder="0"
-                                className="w-24 p-2 text-sm font-bold border border-zinc-300  rounded-lg bg-white  focus:ring-2 focus:ring-indigo-500"
+                                className="w-24 md-field p-2 text-sm font-bold"
                             />
                             <div className="flex-1 grid grid-cols-5 gap-1">
                                 {[-500, -300, 0, 300, 500].map((val) => (
@@ -239,10 +239,10 @@ export default function TdeeModal({ onApply, onClose }: TdeeModalProps) {
                                         type="button"
                                         onClick={() => setAdjustment(val > 0 ? `+${val}` : val.toString())}
                                         className={clsx(
-                                            "text-[10px] font-bold py-1 rounded border transition-colors",
+                                            "text-[10px] font-bold py-1 rounded-full border transition-colors",
                                             adjustment === (val > 0 ? `+${val}` : val.toString())
-                                                ? "bg-indigo-600 text-white border-indigo-600"
-                                                : "bg-white  text-zinc-600 border-zinc-200  hover:bg-zinc-100"
+                                                ? "bg-emerald-700 text-white border-emerald-700"
+                                                : "bg-white text-zinc-600 border-zinc-200 hover:bg-emerald-50"
                                         )}
                                     >
                                         {val > 0 ? `+${val}` : val}
@@ -260,8 +260,8 @@ export default function TdeeModal({ onApply, onClose }: TdeeModalProps) {
                         <div className={clsx(
                             "p-4 rounded-lg border space-y-3",
                             applyRecomp && calc.cCalsNegative
-                                ? "bg-red-50  border-red-200 "
-                                : "bg-indigo-50  border-indigo-200 "
+                                ? "bg-red-50 border-red-200"
+                                : "bg-emerald-50 border-emerald-200"
                         )}>
                             <div className="grid grid-cols-2 gap-4 text-center">
                                 <div className="border-r border-indigo-100  pr-2">
@@ -269,9 +269,9 @@ export default function TdeeModal({ onApply, onClose }: TdeeModalProps) {
                                     <div className="text-sm font-bold text-zinc-700 ">{calc.tdee.toLocaleString()} <span className="text-[10px]">kcal</span></div>
                                 </div>
                                 <div>
-                                    <div className="text-[10px] text-indigo-600  font-medium">目標カロリー</div>
-                                    <div className="text-lg font-extrabold text-indigo-700 ">{calc.targetCalories.toLocaleString()}</div>
-                                    <div className="text-[10px] text-indigo-500">kcal</div>
+                                    <div className="text-[10px] text-emerald-700 font-medium">目標カロリー</div>
+                                    <div className="text-lg font-extrabold text-emerald-800">{calc.targetCalories.toLocaleString()}</div>
+                                    <div className="text-[10px] text-emerald-700">kcal</div>
                                 </div>
                             </div>
 
@@ -292,7 +292,7 @@ export default function TdeeModal({ onApply, onClose }: TdeeModalProps) {
                                         onClick={() => setApplyRecomp(!applyRecomp)}
                                         className={clsx(
                                             "relative w-9 h-5 rounded-full transition-colors",
-                                            applyRecomp ? "bg-indigo-600" : "bg-zinc-300 "
+                                            applyRecomp ? "bg-emerald-700" : "bg-zinc-300 "
                                         )}
                                     >
                                         <span className={clsx(
@@ -303,7 +303,7 @@ export default function TdeeModal({ onApply, onClose }: TdeeModalProps) {
                                 </div>
 
                                 {applyRecomp && (
-                                    <div className="mt-3 bg-white/50  p-2 rounded-md border border-indigo-100 ">
+                                    <div className="mt-3 bg-white/70 p-2 rounded-md border border-emerald-100">
                                         <div className="flex justify-center gap-4 text-xs font-bold">
                                             <span className="text-blue-600 ">P:{calc.pRatio}%</span>
                                             <span className="text-amber-600 ">F:{calc.fRatio}%</span>
@@ -324,11 +324,11 @@ export default function TdeeModal({ onApply, onClose }: TdeeModalProps) {
                 </div>
 
                 {/* Footer */}
-                <div className="flex gap-3 px-5 py-4 border-t border-zinc-200  bg-zinc-50 ">
+                <div className="flex gap-3 px-5 py-4 border-t" style={{ background: "var(--md-surface-container-low)", borderColor: "var(--md-outline-variant)" }}>
                     <button
                         type="button"
                         onClick={onClose}
-                        className="flex-1 py-2.5 rounded-lg font-bold text-sm text-zinc-600  bg-white  border border-zinc-300  hover:bg-zinc-100  transition-colors"
+                        className="flex-1 md-button-outlined py-2.5 font-bold text-sm transition-colors"
                     >
                         キャンセル
                     </button>
@@ -337,10 +337,10 @@ export default function TdeeModal({ onApply, onClose }: TdeeModalProps) {
                         onClick={handleApply}
                         disabled={!calc || (applyRecomp && calc.cCalsNegative)}
                         className={clsx(
-                            "flex-1 py-2.5 rounded-lg font-bold text-sm text-white transition-all",
+                            "flex-1 py-2.5 font-bold text-sm text-white transition-all",
                             (!calc || (applyRecomp && calc.cCalsNegative))
-                                ? "bg-zinc-400 cursor-not-allowed"
-                                : "bg-indigo-600 hover:bg-indigo-700 active:scale-95 shadow-md"
+                                ? "rounded-full bg-zinc-400 cursor-not-allowed"
+                                : "md-button-filled active:scale-95"
                         )}
                     >
                         ✓ 適用して閉じる

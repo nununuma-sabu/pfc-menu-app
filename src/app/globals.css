@@ -1,8 +1,28 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f8fbf7;
+  --foreground: #191c1a;
+  --md-primary: #006c4c;
+  --md-on-primary: #ffffff;
+  --md-primary-container: #8df8c7;
+  --md-on-primary-container: #002114;
+  --md-secondary: #4e6357;
+  --md-secondary-container: #d1e8d8;
+  --md-tertiary: #3d6374;
+  --md-tertiary-container: #c1e8fc;
+  --md-error: #ba1a1a;
+  --md-error-container: #ffdad6;
+  --md-surface: #f8fbf7;
+  --md-surface-container-low: #f2f5ef;
+  --md-surface-container: #ecefe9;
+  --md-surface-container-high: #e6e9e4;
+  --md-on-surface: #191c1a;
+  --md-on-surface-variant: #404943;
+  --md-outline: #707973;
+  --md-outline-variant: #c0c9c2;
+  --md-shadow: 0 1px 2px rgba(0, 0, 0, 0.08), 0 1px 3px 1px rgba(0, 0, 0, 0.04);
+  --md-shadow-hover: 0 2px 6px rgba(0, 0, 0, 0.12), 0 4px 10px 1px rgba(0, 0, 0, 0.06);
 }
 
 @theme inline {
@@ -15,7 +35,101 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+@layer components {
+  .md-surface {
+    background: var(--md-surface);
+    color: var(--md-on-surface);
+  }
+
+  .md-card {
+    background: #ffffff;
+    border: 1px solid var(--md-outline-variant);
+    border-radius: 8px;
+    box-shadow: var(--md-shadow);
+  }
+
+  .md-card-tonal {
+    background: var(--md-surface-container-low);
+    border: 1px solid var(--md-outline-variant);
+    border-radius: 8px;
+  }
+
+  .md-elevation-hover {
+    transition: box-shadow 180ms ease, transform 180ms ease, border-color 180ms ease;
+  }
+
+  .md-elevation-hover:hover {
+    box-shadow: var(--md-shadow-hover);
+  }
+
+  .md-button-filled {
+    min-height: 44px;
+    border-radius: 999px;
+    background: var(--md-primary);
+    color: var(--md-on-primary);
+    box-shadow: var(--md-shadow);
+    transition: background 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+  }
+
+  .md-button-filled:hover {
+    background: #005b40;
+    box-shadow: var(--md-shadow-hover);
+  }
+
+  .md-button-tonal {
+    min-height: 40px;
+    border-radius: 999px;
+    background: var(--md-secondary-container);
+    color: #102019;
+    transition: background 180ms ease, transform 180ms ease;
+  }
+
+  .md-button-tonal:hover {
+    background: #c5dccd;
+  }
+
+  .md-button-outlined {
+    min-height: 40px;
+    border-radius: 999px;
+    border: 1px solid var(--md-outline);
+    color: var(--md-primary);
+    background: transparent;
+    transition: background 180ms ease, border-color 180ms ease, transform 180ms ease;
+  }
+
+  .md-button-outlined:hover {
+    background: rgba(0, 108, 76, 0.08);
+    border-color: var(--md-primary);
+  }
+
+  .md-field {
+    border: 1px solid var(--md-outline);
+    border-radius: 4px;
+    background: #ffffff;
+    color: var(--md-on-surface);
+    outline: none;
+    transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+  }
+
+  .md-field:focus {
+    border-color: var(--md-primary);
+    box-shadow: 0 0 0 3px rgba(0, 108, 76, 0.14);
+  }
+
+  .md-chip {
+    border-radius: 999px;
+    background: var(--md-secondary-container);
+    color: var(--md-on-surface-variant);
+  }
+
+  .md-label {
+    color: var(--md-on-surface-variant);
+    font-size: 0.875rem;
+    font-weight: 650;
+  }
 }
 
 @keyframes heart-bounce {

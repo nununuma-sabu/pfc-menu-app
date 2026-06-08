@@ -19,11 +19,11 @@ function MealCard({ meal, dayLabel }: { meal: Meal, dayLabel: string }) {
     const [saveSuccess, setSaveSuccess] = useState(false);
 
     const getMealStyle = (label: string) => {
-        if (label.includes("朝")) return { icon: Sunrise, color: "bg-orange-500" };
-        if (label.includes("昼")) return { icon: Sun, color: "bg-yellow-500" };
-        if (label.includes("夕") || label.includes("晩")) return { icon: Moon, color: "bg-indigo-500" };
-        if (label.includes("間") || label.includes("補")) return { icon: Coffee, color: "bg-pink-500" };
-        return { icon: Utensils, color: "bg-teal-500" };
+        if (label.includes("朝")) return { icon: Sunrise, color: "bg-amber-600" };
+        if (label.includes("昼")) return { icon: Sun, color: "bg-lime-700" };
+        if (label.includes("夕") || label.includes("晩")) return { icon: Moon, color: "bg-sky-700" };
+        if (label.includes("間") || label.includes("補")) return { icon: Coffee, color: "bg-rose-600" };
+        return { icon: Utensils, color: "bg-emerald-700" };
     };
 
     const { icon: Icon, color } = getMealStyle(meal.timeLabel);
@@ -49,7 +49,7 @@ function MealCard({ meal, dayLabel }: { meal: Meal, dayLabel: string }) {
     };
 
     return (
-        <div className="bg-white rounded-xl shadow-md overflow-hidden border border-zinc-100 hover:shadow-lg transition-shadow flex flex-col relative group">
+        <div className="md-card md-elevation-hover overflow-hidden flex flex-col relative group">
             {/* Save Button Overlay */}
             <button
                 onClick={handleSaveMeal}
@@ -70,33 +70,33 @@ function MealCard({ meal, dayLabel }: { meal: Meal, dayLabel: string }) {
             </div>
             <div className="p-4 flex-1 flex flex-col">
                 <div className="mb-4">
-                    <h4 className="font-bold text-xl text-zinc-900  mb-2">{meal.name}</h4>
-                    <p className="text-sm text-zinc-600  leading-relaxed">{meal.description}</p>
+                    <h4 className="font-bold text-xl mb-2" style={{ color: "var(--md-on-surface)" }}>{meal.name}</h4>
+                    <p className="text-sm leading-relaxed" style={{ color: "var(--md-on-surface-variant)" }}>{meal.description}</p>
                 </div>
 
                 <div className="mt-auto space-y-4">
-                    <div className="bg-zinc-50  p-3 rounded-lg grid grid-cols-4 gap-2 text-center text-sm">
+                    <div className="md-card-tonal p-3 grid grid-cols-4 gap-2 text-center text-sm">
                         <div>
                             <div className="text-zinc-500 text-xs">Cal</div>
-                            <div className="font-bold text-zinc-800 ">{meal.calories}</div>
+                            <div className="font-bold" style={{ color: "var(--md-on-surface)" }}>{meal.calories}</div>
                         </div>
                         <div>
                             <div className="text-zinc-500 text-xs">P</div>
-                            <div className="font-bold text-zinc-800 ">{meal.p}g</div>
+                            <div className="font-bold" style={{ color: "var(--md-on-surface)" }}>{meal.p}g</div>
                         </div>
                         <div>
                             <div className="text-zinc-500 text-xs">F</div>
-                            <div className="font-bold text-zinc-800 ">{meal.f}g</div>
+                            <div className="font-bold" style={{ color: "var(--md-on-surface)" }}>{meal.f}g</div>
                         </div>
                         <div>
                             <div className="text-zinc-500 text-xs">C</div>
-                            <div className="font-bold text-zinc-800 ">{meal.c}g</div>
+                            <div className="font-bold" style={{ color: "var(--md-on-surface)" }}>{meal.c}g</div>
                         </div>
                     </div>
 
                     {/* Recipe Details (Accordion) */}
                     {(meal.ingredients || meal.steps) && (
-                        <div className="pt-2 space-y-2 border-t border-zinc-50">
+                        <div className="pt-2 space-y-2 border-t" style={{ borderColor: "var(--md-outline-variant)" }}>
                             {meal.ingredients && meal.ingredients.length > 0 && (
                                 <AnimatedAccordion title={<span className="flex items-center gap-1"><Utensils className="w-4 h-4" /> 材料</span>}>
                                     <ul className="list-disc list-inside text-zinc-600 pl-3 pt-2 pb-2 space-y-1 text-xs">
@@ -123,8 +123,8 @@ function MealCard({ meal, dayLabel }: { meal: Meal, dayLabel: string }) {
     );
 } function TotalBar({ total, label }: { total: Nutrition; label: string }) {
     return (
-        <div className="bg-zinc-100  p-4 rounded-xl flex flex-wrap justify-between items-center gap-4">
-            <h3 className="font-bold text-zinc-700  flex items-center gap-2">
+        <div className="md-card-tonal p-4 flex flex-wrap justify-between items-center gap-4">
+            <h3 className="font-bold flex items-center gap-2" style={{ color: "var(--md-on-surface)" }}>
                 <Utensils className="w-5 h-5" />
                 {label}
             </h3>
@@ -145,7 +145,8 @@ function AnimatedAccordion({ title, children }: { title: React.ReactNode; childr
         <div className="overflow-hidden">
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="w-full flex items-center justify-between cursor-pointer text-sm font-bold text-zinc-700 hover:text-indigo-600 transition-colors bg-zinc-50 p-2 rounded-md"
+                className="w-full flex items-center justify-between cursor-pointer text-sm font-bold transition-colors md-card-tonal p-2 hover:bg-emerald-50"
+                style={{ color: "var(--md-on-surface)" }}
             >
                 {title}
                 <span className={clsx("transition-transform duration-300", isOpen ? "rotate-180" : "rotate-0")}>
@@ -201,11 +202,11 @@ export default function MenuDisplay({ menu, dailyTarget }: MenuDisplayProps) {
     return (
         <div className="w-full max-w-5xl space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2">
-                <h2 className="text-2xl font-bold text-zinc-800 flex items-center gap-2">
-                    <Sparkles className="w-5 h-5 text-yellow-500" />
+                <h2 className="text-2xl font-bold flex items-center gap-2" style={{ color: "var(--md-on-surface)" }}>
+                    <Sparkles className="w-5 h-5 text-amber-500" />
                     AIが提案する献立
                 </h2>
-                <div className="text-sm text-zinc-500 bg-white px-4 py-2 rounded-xl border border-zinc-200">
+                <div className="text-sm md-card-tonal px-4 py-2" style={{ color: "var(--md-on-surface-variant)" }}>
                     カード右上の <Heart className="w-4 h-4 inline-block text-pink-400 mx-1" /> を押して食事ごとに保存できます
                 </div>
             </div>
@@ -218,10 +219,10 @@ export default function MenuDisplay({ menu, dailyTarget }: MenuDisplayProps) {
                             key={index}
                             onClick={() => setActiveDay(index)}
                             className={clsx(
-                                "flex-1 py-3 px-4 rounded-xl font-bold text-sm border-2 transition-all flex items-center justify-center gap-2",
+                                "flex-1 py-3 px-4 rounded-full font-bold text-sm border transition-all flex items-center justify-center gap-2",
                                 activeDay === index
-                                    ? "bg-emerald-600 text-white border-emerald-600 shadow-lg shadow-emerald-600/20"
-                                    : "bg-white  text-zinc-600  border-zinc-200  hover:border-emerald-300 "
+                                    ? "md-button-filled border-transparent"
+                                    : "md-button-outlined"
                             )}
                         >
                             <Calendar className="w-4 h-4" />
@@ -275,22 +276,22 @@ export default function MenuDisplay({ menu, dailyTarget }: MenuDisplayProps) {
 
             {/* Shopping List */}
             {menu.shoppingList && menu.shoppingList.length > 0 && (
-                <div className="bg-white  p-6 rounded-xl shadow-md border border-zinc-100 ">
-                    <h3 className="font-bold text-xl text-zinc-800  mb-4 flex items-center gap-2">
-                        <span className="bg-indigo-100  text-indigo-600  p-2 rounded-lg">
+                <div className="md-card p-6">
+                    <h3 className="font-bold text-xl mb-4 flex items-center gap-2" style={{ color: "var(--md-on-surface)" }}>
+                        <span className="md-chip p-2">
                             <ShoppingCart className="w-5 h-5" />
                         </span>
                         買い物リスト {isMultiDay && <span className="text-sm font-normal text-zinc-500">（{menu.days.length}日分統合）</span>}
                     </h3>
                     {groupByCategory(menu.shoppingList).map(([category, items]) => (
                         <div key={category} className="mb-4">
-                            <h4 className="text-sm font-bold text-zinc-600  mb-2 border-b border-zinc-200  pb-1">
+                            <h4 className="text-sm font-bold mb-2 border-b pb-1" style={{ color: "var(--md-on-surface-variant)", borderColor: "var(--md-outline-variant)" }}>
                                 {category}
                             </h4>
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                                 {items.map((item, index) => (
-                                    <div key={index} className="flex items-center gap-2 p-2 rounded-lg hover:bg-zinc-50  transition-colors">
-                                        <input type="checkbox" className="w-4 h-4 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500" />
+                                    <div key={index} className="flex items-center gap-2 p-2 rounded-lg hover:bg-emerald-50 transition-colors">
+                                        <input type="checkbox" className="w-4 h-4 rounded border-zinc-300 text-emerald-700 focus:ring-emerald-700" />
                                         <span className="text-sm text-zinc-700 ">
                                             {item.name} <span className="text-zinc-400 text-xs">({item.amount})</span>
                                         </span>

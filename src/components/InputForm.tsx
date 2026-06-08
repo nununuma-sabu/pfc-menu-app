@@ -21,11 +21,14 @@ const FAVORITE_RECIPES = [
 ];
 
 const PRESETS = [
-    { name: "標準バランス", p: 15, f: 25, c: 60, color: "bg-blue-100 text-blue-700   border-blue-200 " },
-    { name: "ローファット", p: 30, f: 10, c: 60, color: "bg-green-100 text-green-700   border-green-200 " },
-    { name: "ケトジェニック", p: 20, f: 75, c: 5, color: "bg-purple-100 text-purple-700   border-purple-200 " },
-    { name: "筋肥大 (高タンパク)", p: 40, f: 20, c: 40, color: "bg-orange-100 text-orange-700   border-orange-200 " },
+    { name: "標準バランス", p: 15, f: 25, c: 60, color: "md-button-tonal border border-transparent" },
+    { name: "ローファット", p: 30, f: 10, c: 60, color: "bg-emerald-100 text-emerald-900 border border-emerald-200 hover:bg-emerald-200" },
+    { name: "ケトジェニック", p: 20, f: 75, c: 5, color: "bg-sky-100 text-sky-900 border border-sky-200 hover:bg-sky-200" },
+    { name: "筋肥大 (高タンパク)", p: 40, f: 20, c: 40, color: "bg-amber-100 text-amber-900 border border-amber-200 hover:bg-amber-200" },
 ];
+
+const FIELD_CLASS = "w-full md-field p-3 text-sm";
+const SECTION_CARD_CLASS = "md-card-tonal p-5 space-y-4";
 
 const PresetButtons = React.memo(({ onApply }: { onApply: (preset: { p: number; f: number; c: number }) => void }) => (
     <div className="grid grid-cols-2 gap-2">
@@ -34,7 +37,7 @@ const PresetButtons = React.memo(({ onApply }: { onApply: (preset: { p: number; 
                 key={preset.name}
                 type="button"
                 onClick={() => onApply(preset)}
-                className={`p-2 text-xs font-bold rounded-lg border transition-all hover:scale-105 active:scale-95 ${preset.color}`}
+                className={`px-3 py-2 text-xs font-bold transition-all active:scale-[0.98] ${preset.color}`}
             >
                 {preset.name}
             </button>
@@ -213,19 +216,19 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
 
     return (
         <>
-            <form onSubmit={handleSubmit} className="w-full max-w-md space-y-6 p-6 bg-white  rounded-xl shadow-lg border border-zinc-100 ">
+            <form onSubmit={handleSubmit} className="w-full max-w-md space-y-6 p-6 md-card">
                 {/* Top Section: Target Calories & PFC Settings */}
-                <div className="bg-zinc-50 p-5 rounded-xl border border-zinc-200 space-y-4">
+                <div className={SECTION_CARD_CLASS}>
                     <div className="flex items-center justify-between mb-2">
                         <div>
-                            <h2 className="text-lg font-bold text-zinc-800">目標設定</h2>
-                            <p className="text-xs text-zinc-500">カロリーとPFC比率を入力してください</p>
+                            <h2 className="text-lg font-bold" style={{ color: "var(--md-on-surface)" }}>目標設定</h2>
+                            <p className="text-xs" style={{ color: "var(--md-on-surface-variant)" }}>カロリーとPFC比率を入力してください</p>
                         </div>
                     </div>
 
                     {/* Calories */}
                     <div>
-                        <label className="block text-sm font-bold text-zinc-700 mb-1">
+                        <label className="block md-label mb-1">
                             目標カロリー (kcal)
                         </label>
                         <input
@@ -234,14 +237,14 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                             value={calories}
                             onKeyDown={handleIntegerKeyDown}
                             onChange={(e) => handleSanitizedChange(e, setCalories)}
-                            className="w-full p-2.5 border border-zinc-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 transition-all font-medium text-lg"
+                            className={`${FIELD_CLASS} font-medium text-lg`}
                             required
                         />
                     </div>
 
                     {/* Presets */}
                     <div className="pt-2">
-                        <label className="block text-xs font-bold text-zinc-600 mb-2">
+                        <label className="block text-xs font-bold mb-2" style={{ color: "var(--md-on-surface-variant)" }}>
                             PFCバランス プリセット
                         </label>
                         <PresetButtons onApply={applyPreset} />
@@ -252,19 +255,19 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                         <button
                             type="button"
                             onClick={() => setShowTdeeModal(true)}
-                            className="w-full p-2.5 bg-indigo-50 hover:bg-indigo-100 rounded-lg border border-indigo-200 transition-all flex items-center justify-center gap-2 group shadow-sm"
+                            className="w-full md-button-tonal px-4 py-2.5 flex items-center justify-center gap-2 group"
                         >
-                            <Calculator className="w-4 h-4 text-indigo-600 group-hover:scale-110 transition-transform" />
-                            <span className="text-sm font-bold text-indigo-700">TDEE自動計算 (体重 &amp; 体脂肪率から)</span>
+                            <Calculator className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                            <span className="text-sm font-bold">TDEE自動計算 (体重 &amp; 体脂肪率から)</span>
                         </button>
                     </div>
                 </div>
 
                 {/* Fixed Meals Section */}
-                <div className="p-5 bg-indigo-50/50 rounded-xl border border-indigo-100 space-y-4 shadow-sm">
-                    <div className="flex items-center gap-2 border-b border-indigo-200/50 pb-2">
-                        <Lock className="w-5 h-5 text-indigo-600" />
-                        <h3 className="text-sm font-bold text-indigo-800">お気に入りレシピから固定 (任意)</h3>
+                <div className={SECTION_CARD_CLASS}>
+                    <div className="flex items-center gap-2 border-b pb-2" style={{ borderColor: "var(--md-outline-variant)" }}>
+                        <Lock className="w-5 h-5" style={{ color: "var(--md-primary)" }} />
+                        <h3 className="text-sm font-bold" style={{ color: "var(--md-on-surface)" }}>お気に入りレシピから固定 (任意)</h3>
                     </div>
 
                     {fixedMeals.length > 0 ? (
@@ -272,15 +275,16 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                             {fixedMeals.map((fm, idx) => {
                                 const recipe = FAVORITE_RECIPES.find(r => r.id === fm.recipeId);
                                 return (
-                                    <div key={fm.mealIndex} className="flex items-center justify-between bg-white p-3 rounded-lg border border-indigo-100 text-sm shadow-sm transition-all hover:border-indigo-300">
+                                    <div key={fm.mealIndex} className="flex items-center justify-between bg-white p-3 rounded-lg border text-sm md-elevation-hover" style={{ borderColor: "var(--md-outline-variant)" }}>
                                         <div className="flex flex-col">
-                                            <span className="font-bold text-indigo-600 text-xs mb-0.5">{fm.mealIndex + 1}食目</span>
-                                            <span className="text-zinc-700 font-medium">{recipe?.name}</span>
+                                            <span className="font-bold text-xs mb-0.5" style={{ color: "var(--md-primary)" }}>{fm.mealIndex + 1}食目</span>
+                                            <span className="font-medium" style={{ color: "var(--md-on-surface)" }}>{recipe?.name}</span>
                                         </div>
                                         <button
                                             type="button"
                                             onClick={() => setFixedMeals(fixedMeals.filter((_, i) => i !== idx))}
-                                            className="text-red-500 hover:text-red-700 hover:bg-red-50 font-bold px-3 py-1.5 rounded-md transition-colors text-xs"
+                                            className="font-bold px-3 py-1.5 rounded-full transition-colors text-xs"
+                                            style={{ color: "var(--md-error)" }}
                                         >
                                             解除
                                         </button>
@@ -289,14 +293,14 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                             })}
                         </div>
                     ) : (
-                        <p className="text-xs text-indigo-400/80 bg-white/50 p-3 rounded-lg border border-indigo-100/50 text-center">
+                        <p className="text-xs bg-white/70 p-3 rounded-lg border text-center" style={{ color: "var(--md-on-surface-variant)", borderColor: "var(--md-outline-variant)" }}>
                             固定したい食事枠とレシピを選択してください。
                         </p>
                     )}
 
                     <div className="space-y-2 pt-1">
                         <select
-                            className="w-full p-2.5 text-sm font-medium border border-indigo-200 rounded-lg bg-white shadow-sm focus:ring-2 focus:ring-indigo-500 transition-shadow outline-none"
+                            className={`${FIELD_CLASS} font-medium`}
                             onChange={(e) => {
                                 const val = e.target.value;
                                 if (!val) return;
@@ -316,7 +320,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                                 </option>
                             ))}
                         </select>
-                        <div className="text-[10px] text-indigo-500/70 italic text-right px-1">
+                        <div className="text-[10px] italic text-right px-1" style={{ color: "var(--md-on-surface-variant)" }}>
                             ※現在はシェイクのみ選択可
                         </div>
                     </div>
@@ -327,7 +331,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
 
                     {/* Main Ingredient */}
                     <div>
-                        <label className="block text-sm font-bold text-zinc-700 mb-1">
+                        <label className="block md-label mb-1">
                             メイン食材 (任意)
                         </label>
                         <input
@@ -338,22 +342,22 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                                 setMainIngredient(val);
                             }}
                             placeholder="例: 鶏胸肉, 鮭"
-                            className="w-full p-2.5 border border-zinc-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 transition-all text-sm"
+                            className={FIELD_CLASS}
                         />
-                        <p className="text-xs text-zinc-500 mt-1.5 ml-1">
+                        <p className="text-xs mt-1.5 ml-1" style={{ color: "var(--md-on-surface-variant)" }}>
                             使いたい食材があれば入力してください。
                         </p>
                     </div>
 
                     {/* Food Exclusion Section */}
-                    <div className="space-y-4 p-5 bg-zinc-50/80 rounded-xl border border-zinc-200/80 shadow-sm">
-                        <h3 className="text-sm font-bold text-zinc-800 flex items-center gap-1.5">
+                    <div className={SECTION_CARD_CLASS}>
+                        <h3 className="text-sm font-bold flex items-center gap-1.5" style={{ color: "var(--md-on-surface)" }}>
                             <span className="text-base">🚫</span> 除外食材
                         </h3>
 
                         {/* Allergies - Most critical */}
-                        <div className="p-4 bg-red-50/80 rounded-lg border border-red-200/80 shadow-sm">
-                            <label className="flex items-center gap-1.5 text-sm font-bold text-red-700 mb-2">
+                        <div className="p-4 rounded-lg border" style={{ background: "var(--md-error-container)", borderColor: "#ffb4ab" }}>
+                            <label className="flex items-center gap-1.5 text-sm font-bold mb-2" style={{ color: "var(--md-error)" }}>
                                 <ShieldAlert className="w-4 h-4" />
                                 アレルギー食材
                             </label>
@@ -362,16 +366,16 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                                 value={allergies}
                                 onChange={(e) => setAllergies(e.target.value)}
                                 placeholder="例: えび, かに, 小麦, そば"
-                                className="w-full p-2.5 text-sm border border-red-300 rounded-md bg-white focus:ring-2 focus:ring-red-500 transition-all font-medium"
+                                className="w-full md-field p-3 text-sm font-medium"
                             />
-                            <p className="text-[10px] text-red-600/80 mt-2 font-bold leading-relaxed">
+                            <p className="text-[10px] mt-2 font-bold leading-relaxed" style={{ color: "var(--md-error)" }}>
                                 ⚠️ エキス・だし・調味料を含め完全に排除します。カンマ区切りで複数入力可。
                             </p>
                         </div>
 
                         {/* Disliked Foods */}
                         <div className="pt-1">
-                            <label className="block text-sm font-bold text-zinc-700 mb-1">
+                            <label className="block md-label mb-1">
                                 <span className="mr-1">😣</span> 苦手な食材
                             </label>
                             <input
@@ -379,14 +383,14 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                                 value={dislikedFoods}
                                 onChange={(e) => setDislikedFoods(e.target.value)}
                                 placeholder="例: セロリ, パクチー"
-                                className="w-full p-2.5 text-sm border border-zinc-300 rounded-lg bg-white focus:ring-2 focus:ring-zinc-400 transition-all"
+                                className={FIELD_CLASS}
                             />
-                            <p className="text-[10px] text-zinc-500 mt-1.5 ml-1">使用しません。カンマ区切りで複数入力可。</p>
+                            <p className="text-[10px] mt-1.5 ml-1" style={{ color: "var(--md-on-surface-variant)" }}>使用しません。カンマ区切りで複数入力可。</p>
                         </div>
 
                         {/* Avoid Foods */}
                         <div>
-                            <label className="block text-sm font-bold text-zinc-700 mb-1">
+                            <label className="block md-label mb-1">
                                 <span className="mr-1">😐</span> 嫌いな食材
                             </label>
                             <input
@@ -394,15 +398,15 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                                 value={avoidFoods}
                                 onChange={(e) => setAvoidFoods(e.target.value)}
                                 placeholder="例: ピーマン, なす"
-                                className="w-full p-2.5 text-sm border border-zinc-300 rounded-lg bg-white focus:ring-2 focus:ring-zinc-400 transition-all"
+                                className={FIELD_CLASS}
                             />
-                            <p className="text-[10px] text-zinc-500 mt-1.5 ml-1">できるだけ避けます。カンマ区切りで複数入力可。</p>
+                            <p className="text-[10px] mt-1.5 ml-1" style={{ color: "var(--md-on-surface-variant)" }}>できるだけ避けます。カンマ区切りで複数入力可。</p>
                         </div>
                     </div>
 
                     {/* Days */}
                     <div className="pt-2">
-                        <label className="block text-sm font-bold text-zinc-700 mb-2">
+                        <label className="block md-label mb-2">
                             生成日数
                         </label>
                         <div className="flex gap-3">
@@ -412,24 +416,24 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                                     type="button"
                                     onClick={() => setDays(d)}
                                     className={clsx(
-                                        "flex-1 py-2.5 rounded-lg font-bold text-sm border transition-all active:scale-95 shadow-sm",
+                                        "flex-1 py-2.5 px-3 rounded-full font-bold text-sm border transition-all active:scale-[0.98]",
                                         days === d
-                                            ? "bg-emerald-600 text-white border-emerald-600 ring-2 ring-emerald-600/20"
-                                            : "bg-white text-zinc-600 border-zinc-200 hover:border-emerald-300 hover:bg-emerald-50/50"
+                                            ? "md-button-filled border-transparent"
+                                            : "md-button-outlined"
                                     )}
                                 >
                                     {d}日分
                                 </button>
                             ))}
                         </div>
-                        <p className="text-xs text-zinc-500 mt-2 ml-1">
+                        <p className="text-xs mt-2 ml-1" style={{ color: "var(--md-on-surface-variant)" }}>
                             まとめ買い向け。日ごとに異なるメニューを提案します。
                         </p>
                     </div>
 
                     {/* Meal Count */}
                     <div>
-                        <label className="block text-sm font-bold text-zinc-700 mb-2">
+                        <label className="block md-label mb-2">
                             食事回数（1日あたり）
                         </label>
                         <div className="flex gap-2.5">
@@ -439,10 +443,10 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                                     type="button"
                                     onClick={() => setMealCount(count)}
                                     className={clsx(
-                                        "flex-1 py-2.5 rounded-lg font-bold text-sm border transition-all active:scale-95 shadow-sm",
+                                        "flex-1 py-2.5 px-3 rounded-full font-bold text-sm border transition-all active:scale-[0.98]",
                                         mealCount === count
-                                            ? "bg-blue-600 text-white border-blue-600 ring-2 ring-blue-600/20"
-                                            : "bg-white text-zinc-600 border-zinc-200 hover:border-blue-300 hover:bg-blue-50/50"
+                                            ? "md-button-filled border-transparent"
+                                            : "md-button-outlined"
                                     )}
                                 >
                                     {count}食
@@ -453,8 +457,8 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
 
                     {/* PFC Ratios */}
                     <div className="grid grid-cols-3 gap-3 pt-2">
-                        <div className="bg-zinc-50 p-3 rounded-lg border border-zinc-200">
-                            <label className="block text-xs font-bold text-zinc-600 mb-1.5 text-center">
+                        <div className="md-card-tonal p-3">
+                            <label className="block text-xs font-bold mb-1.5 text-center" style={{ color: "var(--md-on-surface-variant)" }}>
                                 P (%)
                             </label>
                             <input
@@ -464,15 +468,15 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                                 value={pRatio}
                                 onKeyDown={handleIntegerKeyDown}
                                 onChange={(e) => handlePFChange(e, setPRatio, fRatio)}
-                                className="w-full p-2 border border-zinc-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 text-center font-bold text-sm"
+                                className="w-full md-field p-2 text-center font-bold text-sm"
                                 required
                             />
-                            <div className="text-xs font-medium text-center text-zinc-500 mt-2 bg-white rounded border border-zinc-100 py-1 shadow-sm">
+                            <div className="text-xs font-medium text-center mt-2 bg-white rounded border py-1" style={{ color: "var(--md-on-surface-variant)", borderColor: "var(--md-outline-variant)" }}>
                                 {grams.p}g
                             </div>
                         </div>
-                        <div className="bg-zinc-50 p-3 rounded-lg border border-zinc-200">
-                            <label className="block text-xs font-bold text-zinc-600 mb-1.5 text-center">
+                        <div className="md-card-tonal p-3">
+                            <label className="block text-xs font-bold mb-1.5 text-center" style={{ color: "var(--md-on-surface-variant)" }}>
                                 F (%)
                             </label>
                             <input
@@ -482,15 +486,15 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                                 value={fRatio}
                                 onKeyDown={handleIntegerKeyDown}
                                 onChange={(e) => handlePFChange(e, setFRatio, pRatio)}
-                                className="w-full p-2 border border-zinc-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 text-center font-bold text-sm"
+                                className="w-full md-field p-2 text-center font-bold text-sm"
                                 required
                             />
-                            <div className="text-xs font-medium text-center text-zinc-500 mt-2 bg-white rounded border border-zinc-100 py-1 shadow-sm">
+                            <div className="text-xs font-medium text-center mt-2 bg-white rounded border py-1" style={{ color: "var(--md-on-surface-variant)", borderColor: "var(--md-outline-variant)" }}>
                                 {grams.f}g
                             </div>
                         </div>
-                        <div className="bg-zinc-50 p-3 rounded-lg border border-zinc-200">
-                            <label className="block text-xs font-bold text-zinc-600 mb-1.5 text-center">
+                        <div className="md-card-tonal p-3">
+                            <label className="block text-xs font-bold mb-1.5 text-center" style={{ color: "var(--md-on-surface-variant)" }}>
                                 C (%)
                             </label>
                             <input
@@ -500,22 +504,22 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                                 value={cRatio}
                                 onKeyDown={handleIntegerKeyDown}
                                 onChange={(e) => handleSanitizedChange(e, setCRatio)}
-                                className="w-full p-2 border border-zinc-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 text-center font-bold text-sm"
+                                className="w-full md-field p-2 text-center font-bold text-sm"
                                 required
                             />
-                            <div className="text-xs font-medium text-center text-zinc-500 mt-2 bg-white rounded border border-zinc-100 py-1 shadow-sm">
+                            <div className="text-xs font-medium text-center mt-2 bg-white rounded border py-1" style={{ color: "var(--md-on-surface-variant)", borderColor: "var(--md-outline-variant)" }}>
                                 {grams.c}g
                             </div>
                         </div>
                     </div>
-                    <p className="text-xs text-zinc-500 mt-2 text-center pb-2">
+                    <p className="text-xs mt-2 text-center pb-2" style={{ color: "var(--md-on-surface-variant)" }}>
                         ※PまたはFを入力すると、C（炭水化物）は自動で計算されます。
                     </p>
 
                     {/* Validation Feedback */}
                     <div className={clsx(
-                        "text-sm font-bold flex items-center justify-center gap-2 p-3 rounded-lg transition-all shadow-sm border",
-                        isInvalidTotal ? "bg-red-50 text-red-600 border-red-200" : "bg-green-50 text-green-700 border-green-200"
+                        "text-sm font-bold flex items-center justify-center gap-2 p-3 rounded-lg transition-all border",
+                        isInvalidTotal ? "text-red-700 border-red-200 bg-red-50" : "text-emerald-800 border-emerald-200 bg-emerald-50"
                     )}>
                         {isInvalidTotal ? (
                             <>
@@ -528,7 +532,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                     </div>
 
                     {isCalorieExceeded && (
-                        <div className="text-red-600 text-sm bg-red-50 p-4 rounded-xl border border-red-200 flex items-start gap-3 shadow-sm">
+                        <div className="text-red-700 text-sm bg-red-50 p-4 rounded-lg border border-red-200 flex items-start gap-3">
                             <AlertCircle className="w-5 h-5 mt-0.5 shrink-0" />
                             <div className="font-medium leading-relaxed">
                                 固定メニューの合計カロリー（<span className="font-bold">{fixedCalories} kcal</span>）が<br />
@@ -539,7 +543,7 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                     )}
 
                     {error && (
-                        <div className="text-red-600 font-medium text-sm bg-red-50 p-4 rounded-xl border border-red-200 shadow-sm flex items-start gap-2">
+                        <div className="text-red-700 font-medium text-sm bg-red-50 p-4 rounded-lg border border-red-200 flex items-start gap-2">
                             <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
                             {error}
                         </div>
@@ -556,10 +560,10 @@ export default function InputForm({ onSubmit, isLoading }: InputFormProps) {
                         type="submit"
                         disabled={isLoading || isInvalidTotal || isCalorieExceeded}
                         className={clsx(
-                            "w-full py-3.5 px-4 rounded-xl font-bold text-white transition-all text-lg shadow-md flex items-center justify-center h-14",
+                            "w-full py-3.5 px-4 font-bold transition-all text-lg flex items-center justify-center h-14",
                             (isLoading || isInvalidTotal || isCalorieExceeded)
-                                ? "bg-zinc-400 cursor-not-allowed opacity-90"
-                                : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-[0.98] hover:shadow-lg"
+                                ? "rounded-full bg-zinc-400 text-white cursor-not-allowed opacity-90"
+                                : "md-button-filled active:scale-[0.98]"
                         )}
                     >
                         {isLoading ? (
